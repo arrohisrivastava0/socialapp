@@ -37,7 +37,10 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: _pages,
+      ),
       bottomNavigationBar: CurvedNavigationBar(
         animationDuration: Duration(milliseconds: 200),
         backgroundColor: Theme.of(context).colorScheme.surface,
@@ -70,7 +73,7 @@ class _HomePageState extends State<HomePage> {
           });
         },
       ),
-      body: Container(color: Theme.of(context).colorScheme.surface),
+      // body: Container(color: Theme.of(context).colorScheme.surface),
     );
   }
 }

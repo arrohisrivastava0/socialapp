@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -46,6 +47,8 @@ class _SignupPageState extends State<SignupPage> {
             email: emailTextController.text, password: passTextController.text);
         Navigator.pop(context);
         displayErrorMessage("Successfully Registered!", context);
+        createUserDoc(userCredential);
+        if(context.mounted) Navigator.pop(context);
       }
       on FirebaseAuthException catch(e) {
         Navigator.pop(context);
@@ -53,6 +56,18 @@ class _SignupPageState extends State<SignupPage> {
       }
     }
 
+  }
+
+  Future<void> createUserDoc(UserCredential? userCredential)async {
+    if(userCredential!=null && userCredential.user!=null){
+      await FirebaseFirestore.instance
+          .collection("Users")
+          .doc(userCredential.user!.uid)
+          .set({
+        'email': userCredential.user!.email,
+        'username': usernameTextController.text
+      });
+    }
   }
 
   @override

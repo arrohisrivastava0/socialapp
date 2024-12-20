@@ -8,7 +8,7 @@ class FeedPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title:Text('Feed', style: TextStyle(color: Theme.of(context).colorScheme.surface),),
+        title:Text('Social', style: TextStyle(color: Theme.of(context).colorScheme.surface),),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
     );
