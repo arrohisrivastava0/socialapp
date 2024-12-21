@@ -3,6 +3,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:socialapp/components/my_button.dart';
+import 'package:socialapp/components/profile_completion_bottom_sheet.dart';
+import 'package:socialapp/pages/profile_completion_page.dart';
+
+import '../helper/confirmation_dialogue.dart';
 
 class UserProfilePage extends StatefulWidget {
   UserProfilePage({super.key});
@@ -51,7 +55,23 @@ class _UserProfilePageState extends State<UserProfilePage> {
   // }
 
   void logout()async{
-    FirebaseAuth.instance.signOut();
+    final bool? confirmed = await showConfirmationDialog(
+      context: context,
+      title: 'Logout',
+      message: 'Are you sure you want to Logout?',
+      confirmText: 'Logout',
+      cancelText: 'Cancel',
+    );
+    if (confirmed == true){
+      FirebaseAuth.instance.signOut();
+    }
+  }
+
+  void completeProfile(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const ProfileCompletionPage()),
+    );
   }
 
   @override
@@ -85,13 +105,20 @@ class _UserProfilePageState extends State<UserProfilePage> {
               children: [
                 Text(user!['email']),
                 Text(user!['username']),
-                MyButton(onTap: (){}, btnText: "Complete your account")
+                MyButton(onTap: (){
+                  return ProfileCompletionBottomSheet();
+                }, btnText: "Complete your profile")
               ],
             );
           }
 
           else{
-            return MyButton(onTap: (){}, btnText: "Complete your account");
+            return MyButton(
+              onTap: (){
+                return ProfileCompletionBottomSheet();
+              },
+              btnText: 'Complete your profile',
+            );
           }
         },
       ),

@@ -46,7 +46,6 @@ class SearchPage extends StatelessWidget {
                   itemCount: users.length,
                   itemBuilder: (context, index) {
                     final user = users[index];
-
                     return Padding(
                       padding: const EdgeInsets.all(6.0),
                       child: ListTile(

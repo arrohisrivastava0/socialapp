@@ -11,6 +11,6 @@ ThemeData lightMode=ThemeData(
   ),
   textTheme: ThemeData.light().textTheme.apply(
     bodyColor: Colors.grey.shade800,
-    displayColor: Colors.black
+    displayColor: Colors.black,
   )
 );
