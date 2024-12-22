@@ -65,7 +65,9 @@ class _SignupPageState extends State<SignupPage> {
           .doc(userCredential.user!.uid)
           .set({
         'email': userCredential.user!.email,
-        'username': usernameTextController.text
+        'username': usernameTextController.text,
+        'name': "--",
+        'bio': "--"
       });
     }
   }

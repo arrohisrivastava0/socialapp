@@ -2,11 +2,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:socialapp/components/my_button.dart';
-import 'package:socialapp/components/profile_completion_bottom_sheet.dart';
-import 'package:socialapp/pages/profile_completion_page.dart';
 
+import '../components/my_textfield.dart';
 import '../helper/confirmation_dialogue.dart';
+import '../helper/helper_dialogue.dart';
 
 class UserProfilePage extends StatefulWidget {
   UserProfilePage({super.key});
@@ -17,8 +18,12 @@ class UserProfilePage extends StatefulWidget {
 }
 
 class _UserProfilePageState extends State<UserProfilePage> {
+  final TextEditingController nameTextController= TextEditingController();
+  final TextEditingController bioTextController= TextEditingController();
   User? currentUser= FirebaseAuth.instance.currentUser;
   String userName = "Loading...";
+  String name="--";
+  String bio="--";
 
   Future<void> fetchUserData() async {
     try {
@@ -32,6 +37,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
         if (user != null && mounted) {
           setState(() {
             userName = user['username'] ?? "Unknown User";
+            name=user['name'];
+            bio=user['bio'];
           });
         }
       } else {
@@ -50,9 +57,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
     }
   }
 
-  // Future<DocumentSnapshot<Map<String, dynamic>>> getUserDoc() async{
-  //   return await FirebaseFirestore.instance.collection("Users").doc(currentUser!.uid).get();
-  // }
 
   void logout()async{
     final bool? confirmed = await showConfirmationDialog(
@@ -65,13 +69,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
     if (confirmed == true){
       FirebaseAuth.instance.signOut();
     }
-  }
-
-  void completeProfile(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const ProfileCompletionPage()),
-    );
   }
 
   @override
@@ -101,28 +98,119 @@ class _UserProfilePageState extends State<UserProfilePage> {
           else if(snapshot.hasData){
             Map<String, dynamic>? user=snapshot.data!.data();
             userName=user!['username'];
+            nameTextController.text=name;
+            bioTextController.text=bio;
             return Column(
               children: [
-                Text(user!['email']),
-                Text(user!['username']),
-                MyButton(onTap: (){
-                  return ProfileCompletionBottomSheet();
-                }, btnText: "Complete your profile")
+                SizedBox(height: 30,),
+                Text(user!['name']),
+
+                Text(user!['bio']),
+
+                SizedBox(height: 30,),
+                MyButton(onTap: showMenu, btnText: "Complete your profile")
               ],
             );
           }
 
           else{
-            return MyButton(
-              onTap: (){
-                return ProfileCompletionBottomSheet();
-              },
-              btnText: 'Complete your profile',
-            );
+            return Text("Error Fetching Data");
           }
         },
       ),
 
     );
   }
+
+  showMenu() {
+    showBarModalBottomSheet(
+      clipBehavior: Clip.none,
+      expand: false,
+      context: context,
+      builder: (context) => Container(
+        decoration: BoxDecoration(
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(16.0),
+            topRight: Radius.circular(16.0),
+          ),
+          color: Theme.of(context).colorScheme.surface,
+        ),
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom, // Adjust for keyboard
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min, // Fit content height
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                const SizedBox(height: 30),
+                ClipOval(
+                  child: GestureDetector(
+                    onTap: () {}, // Image tapped
+                    child: Image.asset(
+                      'lib/assets/images/user.png',
+                      fit: BoxFit.cover, // Fixes border issues
+                      width: 110.0,
+                      height: 110.0,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 30),
+                MyTextfield(
+                  hintText: "Name",
+                  obscureText: false,
+                  controller: nameTextController,
+                ),
+                const SizedBox(height: 15),
+                MyTextfield(
+                  hintText: "Bio",
+                  obscureText: false,
+                  controller: bioTextController,
+                ),
+                const SizedBox(height: 30),
+                MyButton(onTap: saveDetails, btnText: "Save"),
+                const SizedBox(height: 30),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void saveDetails() async{
+    showDialog(context: context, builder: (context) => const Center(
+      child: CircularProgressIndicator(),
+    ));
+    try {
+      User? currentUser= FirebaseAuth.instance.currentUser;
+      if (nameTextController.text.isNotEmpty ||
+          bioTextController.text.isNotEmpty){
+        await FirebaseFirestore.instance
+            .collection("Users")
+            .doc(currentUser!.uid)
+            .update({
+          'name': nameTextController.text,
+          'bio': bioTextController.text
+        });
+      }
+      setState(() {
+        name = nameTextController.text;
+        bio=bioTextController.text;// Update locally
+      });
+      await fetchUserData(); // Refresh the entire user data
+      Navigator.pop(context);
+      if(context.mounted) Navigator.pop(context);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Profile updated successfully!")),
+      );
+    }
+    on FirebaseAuthException catch(e) {
+      Navigator.pop(context);
+      displayErrorMessage('An unknown error occurred', context);
+    }
+  }
+
 }

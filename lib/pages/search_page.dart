@@ -50,7 +50,7 @@ class SearchPage extends StatelessWidget {
                       padding: const EdgeInsets.all(6.0),
                       child: ListTile(
                         title: Text(user["username"]),
-                        subtitle: Text(user["email"]),
+                        subtitle: Text(user["name"]),
                         tileColor: Theme.of(context).colorScheme.onPrimary,
                         shape: RoundedRectangleBorder(
                           borderRadius:BorderRadius.circular(15)
