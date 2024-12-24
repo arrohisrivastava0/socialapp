@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:socialapp/pages/user_profile_page.dart';
 
 import '../components/my_button.dart';
 
@@ -25,24 +26,35 @@ class _OthersProfilePageState extends State<OthersProfilePage> {
 
     // Get the current user's ID
     currentUserId = FirebaseAuth.instance.currentUser!.uid;
+    _fetchUserData();
     // Check the connection status
     _checkConnectionStatus();
   }
 
+  void _fetchUserData() async {
+    final userDoc = await FirebaseFirestore.instance.collection("Users").doc(widget.userId).get();
+    if (userDoc.exists) {
+      setState(() {
+        userName = userDoc.data()!['username'] ?? "Unknown User";
+      });
+    }
+  }
+
   void _checkConnectionStatus() async {
-
-    // final currentUserId = FirebaseAuth.instance.currentUser!.uid; // Replace with the logged-in user's ID
-    final connectionDocId = "${currentUserId}_${widget.userId}";
-
     final connectionDoc = await FirebaseFirestore.instance
         .collection("Connections")
-        .doc(connectionDocId)
+        .doc(currentUserId)
         .get();
 
-    setState(() {
-      isConnection = connectionDoc.exists;
-    });
+    if (connectionDoc.exists) {
+      final connections = List<String>.from(connectionDoc.data()?['to'] ?? []);
+      setState(() {
+        isConnection = connections.contains(widget.userId);
+      });
+    }
   }
+
+
 
   void _toggleConnectionStatus() async {
     final connectionDocRef = FirebaseFirestore.instance
@@ -52,32 +64,28 @@ class _OthersProfilePageState extends State<OthersProfilePage> {
     if (isConnection) {
       // Remove the connection
       await connectionDocRef.update({
-        'to': FieldValue.arrayRemove([{
-          widget.userId: FieldValue.serverTimestamp()  // Removes the map with the specific userId
-        }])
+        'to': FieldValue.arrayRemove([widget.userId])
       });
       setState(() {
         isConnection = false;
       });
     } else {
-
-      await connectionDocRef.update({
-        'to': FieldValue.arrayUnion([{
-          widget.userId: FieldValue.serverTimestamp()  // Adds the userId with current timestamp
-        }])
-      });
       // Add the connection
-      // await connectionDocRef.update({
-      //   'to': FieldValue.arrayUnion([{
-      //     'uid': widget.userId,
-      //     'timestamp': FieldValue.serverTimestamp()
-      //   }])
-      // });
+      await connectionDocRef.set({
+        'to': FieldValue.arrayUnion([widget.userId])
+      }, SetOptions(merge: true));
       setState(() {
         isConnection = true;
       });
+
     }
+    await FirebaseFirestore.instance.collection("Users").doc(currentUserId).update({
+      'connections': FieldValue.arrayUnion([widget.userId])
+    });
+
   }
+
+
 
 
 
@@ -87,9 +95,7 @@ class _OthersProfilePageState extends State<OthersProfilePage> {
       appBar: AppBar(
         title:Text(userName, style: TextStyle(color: Theme.of(context).colorScheme.surface),),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // actions: [
-        //   IconButton(onPressed: logout, icon: const Icon(Icons.logout), color: Theme.of(context).colorScheme.surface,)
-        // ],
+
       ),
       body: FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
         future: FirebaseFirestore.instance.collection("Users").doc(widget.userId).get(),
@@ -100,25 +106,28 @@ class _OthersProfilePageState extends State<OthersProfilePage> {
             );
           }
           else if(snapshot.hasData){
-            Map<String, dynamic>? user=snapshot.data!.data();
+            final user = snapshot.data!.data();
+            if (user == null) {
+              return const Center(child: Text("User not found"));
+            }
 
-            userName=user!['username'];
-            // nameTextController.text=name;
-            // bioTextController.text=bio;
             return Column(
               children: [
-                SizedBox(height: 30,),
-                Text(user!['name']),
-                Text(user!['bio']),
-
-                SizedBox(height: 30,),
-                MyButton(onTap: _toggleConnectionStatus, btnText: isConnection ? "Connected" : "Connect",)
+                const SizedBox(height: 30),
+                Text(user['name'] ?? "No Name"),
+                Text(user['bio'] ?? "No Bio"),
+                const SizedBox(height: 30),
+                MyButton(
+                  onTap: _toggleConnectionStatus,
+                  btnText: isConnection ? "Connected" : "Connect",
+                ),
               ],
             );
+
           }
 
           else{
-            return Text("Error Fetching Data");
+            return const Center(child: Text("Error Fetching Data"));
           }
         },
       ),

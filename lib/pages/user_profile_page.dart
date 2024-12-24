@@ -41,6 +41,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
             userName = user['username'] ?? "Unknown User";
             name=user['name'];
             bio=user['bio'];
+            connectionCount=user['num_connections'];
           });
         }
       } else {
@@ -61,22 +62,47 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
   Future<void> fetchConnectionCount() async {
     try {
-      QuerySnapshot connectionsSnapshot = await FirebaseFirestore.instance
+      final connectionDoc = await FirebaseFirestore.instance
           .collection("Connections")
-          .where("from", isEqualTo: currentUser!.uid)
+          .doc(currentUser!.uid)
           .get();
 
-      setState(() {
-        connectionCount = connectionsSnapshot.docs.length;
-      });
-    } catch (e) {
-      if (mounted) {
+      if (connectionDoc.exists) {
+        final connections = List<String>.from(connectionDoc.data()?['to'] ?? []);
         setState(() {
-          connectionCount = 0; // Default to 0 in case of error
+          connectionCount = connections.length;
+        });
+      } else {
+        setState(() {
+          connectionCount = 0;
         });
       }
+    } catch (e) {
+      setState(() {
+        connectionCount = 0;
+      });
     }
   }
+
+
+  // Future<void> fetchConnectionCount() async {
+  //   try {
+  //     QuerySnapshot connectionsSnapshot = await FirebaseFirestore.instance
+  //         .collection("Connections")
+  //         .where("from", isEqualTo: currentUser!.uid)
+  //         .get();
+  //
+  //     setState(() {
+  //       connectionCount = connectionsSnapshot.docs.length;
+  //     });
+  //   } catch (e) {
+  //     if (mounted) {
+  //       setState(() {
+  //         connectionCount = 0; // Default to 0 in case of error
+  //       });
+  //     }
+  //   }
+  // }
 
 
   void logout()async{
@@ -96,6 +122,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
   void initState() {
     super.initState();
     fetchUserData(); // Fetch user data on widget load
+    fetchConnectionCount();
+    setState(() {});
   }
 
   @override
@@ -108,8 +136,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
           IconButton(onPressed: logout, icon: const Icon(Icons.logout), color: Theme.of(context).colorScheme.surface,)
         ],
       ),
-      body: FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-        future: FirebaseFirestore.instance.collection("Users").doc(currentUser!.uid).get(),
+      body: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+        stream: FirebaseFirestore.instance.collection("Users").doc(currentUser!.uid).snapshots(),
         builder: (context, snapshot){
           if(snapshot.connectionState==ConnectionState.waiting){
             return const Center(
@@ -229,6 +257,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
         bio=bioTextController.text;// Update locally
       });
       await fetchUserData(); // Refresh the entire user data
+      await fetchConnectionCount();
       Navigator.pop(context);
       if(context.mounted) Navigator.pop(context);
 
