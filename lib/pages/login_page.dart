@@ -17,30 +17,39 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final TextEditingController emailTextController= TextEditingController();
+  final TextEditingController emailTextController = TextEditingController();
 
-  final TextEditingController passTextController= TextEditingController();
+  final TextEditingController passTextController = TextEditingController();
 
-  void userLogin() async{
+  void userLogin() async {
     if (emailTextController.text.isEmpty ||
         passTextController.text.isEmpty) {
-      displayErrorMessage("All fields are required!", context);
+      if (mounted) {
+        displayErrorMessage("All fields are required!", context);
+      }
       return;
     }
-    else{
-      showDialog(context: context, builder: (context) => const Center(
-        child: CircularProgressIndicator(),
-      ));
+    else {
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) =>
+          const Center(
+            child: CircularProgressIndicator(),
+          ),
+        );
 
-      try {
-        await FirebaseAuth.instance.signInWithEmailAndPassword(
-            email: emailTextController.text, password: passTextController.text);
-        Navigator.pop(context);
-        displayErrorMessage("Successfully Logged In!", context);
-      }
-      on FirebaseAuthException catch(e) {
-        Navigator.pop(context);
-        displayErrorMessage('An unknown error occurred', context);
+        try {
+          await FirebaseAuth.instance.signInWithEmailAndPassword(
+              email: emailTextController.text,
+              password: passTextController.text);
+          Navigator.pop(context);
+          displayErrorMessage("Successfully Logged In!", context);
+        }
+        on FirebaseAuthException catch (e) {
+          Navigator.pop(context);
+          displayErrorMessage('An unknown error occurred', context);
+        }
       }
     }
   }
@@ -51,61 +60,62 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: Center(
-         child: Column(
-           mainAxisAlignment: MainAxisAlignment.center,
-           children: [
-             //app logo
-             Icon(
-               Icons.local_pizza,
-               size: 60,
-               color: Theme.of(context).colorScheme.inversePrimary,
-             ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            //app logo
+            Icon(
+              Icons.local_pizza,
+              size: 60,
+              color: Theme.of(context).colorScheme.inversePrimary,
+            ),
             const SizedBox(height: 15),
-             //app name
-             const Text(
-                 "P  I  J  J  O",
-               style: TextStyle(
-                 fontSize: 20,
-               ),
-             ),
-             const SizedBox(height: 30),
-             //email textfield
-             MyTextfield(
-                 controller: emailTextController,
-                 hintText: 'Email',
-                 obscureText: false
-             ),
-             const SizedBox(height: 10),
-             //password textfield
-             MyObscureTextfield(
-                 controller: passTextController,
-                 hintText: 'Password',
-             ),
-             const SizedBox(height: 10),
-             Text('Forgot Password?', style: TextStyle(color: Theme.of(context).colorScheme.tertiary),),
-             const SizedBox(height: 30),
+            //app name
+            const Text(
+              "P  I  J  J  O",
+              style: TextStyle(
+                fontSize: 20,
+              ),
+            ),
+            const SizedBox(height: 30),
+            //email textfield
+            MyTextfield(
+                controller: emailTextController,
+                hintText: 'Email',
+                obscureText: false
+            ),
+            const SizedBox(height: 10),
+            //password textfield
+            MyObscureTextfield(
+              controller: passTextController,
+              hintText: 'Password',
+            ),
+            const SizedBox(height: 10),
+            Text('Forgot Password?', style: TextStyle(color: Theme.of(context).colorScheme.tertiary),),
+            const SizedBox(height: 30),
 
-             //sign in button
-             MyButton(onTap: userLogin, btnText: 'Login'),
+            //sign in button
+            MyButton(onTap: userLogin, btnText: 'Login'),
 
-             const SizedBox(height: 10),
-             //sign up
+            const SizedBox(height: 10),
+            //sign up
 
-             Row(
-               mainAxisAlignment: MainAxisAlignment.center,
-               // crossAxisAlignment: CrossAxisAlignment.start,
-               children: [
-                 const Text('Don\'t have an account?'),
-                 const SizedBox(width: 5),
-                 GestureDetector(
-                   onTap: widget.onTap,
-                   child: Text('Sign Up!', style: TextStyle(color: Theme.of(context).colorScheme.tertiary)),
-                 )
-               ],
-             ),
-           ],
-         ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              // crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Don\'t have an account?'),
+                const SizedBox(width: 5),
+                GestureDetector(
+                  onTap: widget.onTap,
+                  child: Text('Sign Up!', style: TextStyle(color: Theme.of(context).colorScheme.tertiary)),
+                )
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
 }
+

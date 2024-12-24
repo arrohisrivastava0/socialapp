@@ -104,7 +104,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
               children: [
                 SizedBox(height: 30,),
                 Text(user!['name']),
-
                 Text(user!['bio']),
 
                 SizedBox(height: 30,),
