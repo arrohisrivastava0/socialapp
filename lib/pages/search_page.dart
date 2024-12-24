@@ -61,7 +61,7 @@ class SearchPage extends StatelessWidget {
                           Navigator.push(
                               context, 
                               MaterialPageRoute(
-                                  builder: (context) => OthersProfilePage(userId: user.id, username: user['username'])
+                                  builder: (context) => OthersProfilePage(userId: user.id)
                               )
                           );
                         },

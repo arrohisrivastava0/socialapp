@@ -7,8 +7,8 @@ import '../components/my_button.dart';
 
 class OthersProfilePage extends StatefulWidget {
   final String userId;
-  final String username;
-  const OthersProfilePage({super.key, required this.userId, required this.username});
+  // final String username;
+  const OthersProfilePage({super.key, required this.userId});
 
   @override
   State<OthersProfilePage> createState() => _OthersProfilePageState();
@@ -17,6 +17,7 @@ class OthersProfilePage extends StatefulWidget {
 class _OthersProfilePageState extends State<OthersProfilePage> {
   bool isConnection= false;
   late String currentUserId;
+  String userName= "Loading...";
 
   @override
   void initState() {
@@ -24,7 +25,6 @@ class _OthersProfilePageState extends State<OthersProfilePage> {
 
     // Get the current user's ID
     currentUserId = FirebaseAuth.instance.currentUser!.uid;
-
     // Check the connection status
     _checkConnectionStatus();
   }
@@ -85,7 +85,7 @@ class _OthersProfilePageState extends State<OthersProfilePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title:Text(widget.username, style: TextStyle(color: Theme.of(context).colorScheme.surface),),
+        title:Text(userName, style: TextStyle(color: Theme.of(context).colorScheme.surface),),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         // actions: [
         //   IconButton(onPressed: logout, icon: const Icon(Icons.logout), color: Theme.of(context).colorScheme.surface,)
@@ -102,7 +102,7 @@ class _OthersProfilePageState extends State<OthersProfilePage> {
           else if(snapshot.hasData){
             Map<String, dynamic>? user=snapshot.data!.data();
 
-            // userName=user!['username'];
+            userName=user!['username'];
             // nameTextController.text=name;
             // bioTextController.text=bio;
             return Column(

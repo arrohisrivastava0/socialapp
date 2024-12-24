@@ -131,7 +131,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                   onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => ConnectionsListPage(userID: currentUser!.uid,),
+                      builder: (context) => ConnectionsListPage( userId: currentUser!.uid,),
                     ),
                   ),
                   child: Text("$connectionCount connections"),
