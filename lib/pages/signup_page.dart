@@ -69,6 +69,17 @@ class _SignupPageState extends State<SignupPage> {
         'name': "  ",
         'bio': "  "
       });
+
+      // await FirebaseFirestore.instance
+      //     .collection("Connections")
+      //     .doc(userCredential.user!.uid)
+      //     .set({
+      //   'from': userCredential.user!.email,
+      //   "to": {
+      //     'uid': "",
+      //     'timestamp': ""
+      //   }
+      // });
     }
   }
 

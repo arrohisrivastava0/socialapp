@@ -8,6 +8,7 @@ import 'package:socialapp/components/my_button.dart';
 import '../components/my_textfield.dart';
 import '../helper/confirmation_dialogue.dart';
 import '../helper/helper_dialogue.dart';
+import 'connections_list_page.dart';
 
 class UserProfilePage extends StatefulWidget {
   UserProfilePage({super.key});
@@ -24,6 +25,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
   String userName = "Loading...";
   String name="--";
   String bio="--";
+  int connectionCount=0;
 
   Future<void> fetchUserData() async {
     try {
@@ -52,6 +54,25 @@ class _UserProfilePageState extends State<UserProfilePage> {
       if (mounted) {
         setState(() {
           userName = "Error loading user";
+        });
+      }
+    }
+  }
+
+  Future<void> fetchConnectionCount() async {
+    try {
+      QuerySnapshot connectionsSnapshot = await FirebaseFirestore.instance
+          .collection("Connections")
+          .where("from", isEqualTo: currentUser!.uid)
+          .get();
+
+      setState(() {
+        connectionCount = connectionsSnapshot.docs.length;
+      });
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          connectionCount = 0; // Default to 0 in case of error
         });
       }
     }
@@ -105,8 +126,17 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 SizedBox(height: 30,),
                 Text(user!['name']),
                 Text(user!['bio']),
-
                 SizedBox(height: 30,),
+                GestureDetector(
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ConnectionsListPage(userID: currentUser!.uid,),
+                    ),
+                  ),
+                  child: Text("$connectionCount connections"),
+                ),
+                const SizedBox(height: 30),
                 MyButton(onTap: showMenu, btnText: "Complete your profile")
               ],
             );

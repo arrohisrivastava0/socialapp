@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:socialapp/helper/helper_dialogue.dart';
+import 'package:socialapp/pages/others_profile_page.dart';
 
 class SearchPage extends StatelessWidget {
   const SearchPage({super.key});
@@ -55,6 +56,15 @@ class SearchPage extends StatelessWidget {
                         shape: RoundedRectangleBorder(
                           borderRadius:BorderRadius.circular(15)
                         ),
+
+                        onTap: (){
+                          Navigator.push(
+                              context, 
+                              MaterialPageRoute(
+                                  builder: (context) => OthersProfilePage(userId: user.id, username: user['username'])
+                              )
+                          );
+                        },
                       ),
                     );
 
