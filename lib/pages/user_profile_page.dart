@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
@@ -26,6 +28,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
   String name="--";
   String bio="--";
   int connectionCount=0;
+  StreamSubscription? connectionListener;
 
   Future<void> fetchUserData() async {
     try {
@@ -60,15 +63,14 @@ class _UserProfilePageState extends State<UserProfilePage> {
     }
   }
 
-  Future<void> fetchConnectionCount() async {
-    try {
-      final connectionDoc = await FirebaseFirestore.instance
-          .collection("Connections")
-          .doc(currentUser!.uid)
-          .get();
-
-      if (connectionDoc.exists) {
-        final connections = List<String>.from(connectionDoc.data()?['to'] ?? []);
+  void startListeningToConnectionCount() {
+    connectionListener = FirebaseFirestore.instance
+        .collection("Connections")
+        .doc(currentUser!.uid)
+        .snapshots()
+        .listen((snapshot) {
+      if (snapshot.exists) {
+        final connections = List<String>.from(snapshot.data()?['to'] ?? []);
         setState(() {
           connectionCount = connections.length;
         });
@@ -77,32 +79,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
           connectionCount = 0;
         });
       }
-    } catch (e) {
-      setState(() {
-        connectionCount = 0;
-      });
-    }
+    });
   }
-
-
-  // Future<void> fetchConnectionCount() async {
-  //   try {
-  //     QuerySnapshot connectionsSnapshot = await FirebaseFirestore.instance
-  //         .collection("Connections")
-  //         .where("from", isEqualTo: currentUser!.uid)
-  //         .get();
-  //
-  //     setState(() {
-  //       connectionCount = connectionsSnapshot.docs.length;
-  //     });
-  //   } catch (e) {
-  //     if (mounted) {
-  //       setState(() {
-  //         connectionCount = 0; // Default to 0 in case of error
-  //       });
-  //     }
-  //   }
-  // }
 
 
   void logout()async{
@@ -122,8 +100,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
   void initState() {
     super.initState();
     fetchUserData(); // Fetch user data on widget load
-    fetchConnectionCount();
-    setState(() {});
+    startListeningToConnectionCount();
   }
 
   @override
@@ -257,7 +234,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
         bio=bioTextController.text;// Update locally
       });
       await fetchUserData(); // Refresh the entire user data
-      await fetchConnectionCount();
+      startListeningToConnectionCount();
       Navigator.pop(context);
       if(context.mounted) Navigator.pop(context);
 
@@ -269,6 +246,14 @@ class _UserProfilePageState extends State<UserProfilePage> {
       Navigator.pop(context);
       displayErrorMessage('An unknown error occurred', context);
     }
+  }
+
+  @override
+  void dispose() {
+    connectionListener?.cancel();
+    nameTextController.dispose();
+    bioTextController.dispose();
+    super.dispose();
   }
 
 }
