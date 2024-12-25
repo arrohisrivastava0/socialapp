@@ -136,7 +136,6 @@ class _SignupPageState extends State<SignupPage> {
               //sign in
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                // crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text('Already have an account?'),
                   const SizedBox(width: 5),
