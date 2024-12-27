@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
 
 class FeedPage extends StatefulWidget {
   const FeedPage({super.key});
@@ -99,8 +100,9 @@ class _FeedPageState extends State<FeedPage> {
     super.initState();
   }
 
-  Future<void> refreshFeed() async {
+  Future<void> _refreshFeed() async {
     setState(() {});
+    return await Future.delayed(const Duration(seconds: 1));
   }
 
   @override
@@ -112,30 +114,36 @@ class _FeedPageState extends State<FeedPage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
 
-      body: StreamBuilder<List<Map<String, dynamic>>>(
-        stream: fetchFeedPosts(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return const Center(child: Text("Error loading posts."));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text("You have no life"));
-          }
-
-          final posts = snapshot.data!;
-          return ListView.builder(
-            itemCount: posts.length,
-            itemBuilder: (context, index) {
-              final post = posts[index];
-              return ListTile(
-                title: Text(post['content']),
-                subtitle: Text(post['userId']),
-                trailing: Text((post['timestamp'] as Timestamp).toDate().toString()),
-              );
-            },
-          );
-        },
+      body: LiquidPullToRefresh(
+        animSpeedFactor: 4,
+        color: Theme.of(context).colorScheme.inversePrimary,
+        height: 100,
+        onRefresh: _refreshFeed,
+        child: StreamBuilder<List<Map<String, dynamic>>>(
+          stream: fetchFeedPosts(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return const Center(child: Text("Error loading posts."));
+            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return const Center(child: Text("You have no life"));
+            }
+        
+            final posts = snapshot.data!;
+            return ListView.builder(
+              itemCount: posts.length,
+              itemBuilder: (context, index) {
+                final post = posts[index];
+                return ListTile(
+                  title: Text(post['content']),
+                  subtitle: Text(post['userId']),
+                  trailing: Text((post['timestamp'] as Timestamp).toDate().toString()),
+                );
+              },
+            );
+          },
+        ),
       ),
 
       floatingActionButton: FloatingActionButton(
