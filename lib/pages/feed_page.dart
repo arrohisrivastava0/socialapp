@@ -12,8 +12,8 @@ class FeedPage extends StatefulWidget {
 
 class _FeedPageState extends State<FeedPage> {
   final TextEditingController feedTextController= TextEditingController();
-  List<String> userPosts = [];
-  List<String> connections=[];
+  // List<String> userPosts = [];
+  // List<String> connections=[];
   // late String currentUserId;
 
   // Function to show the popup dialog
@@ -77,7 +77,7 @@ class _FeedPageState extends State<FeedPage> {
       return FirebaseFirestore.instance
           .collection('Posts')
           .where('userId', whereIn: connections)
-          .orderBy('timestamp', descending: true)
+          // .orderBy('timestamp', descending: true)
           .snapshots()
           .map((querySnapshot) {
         return querySnapshot.docs.map((doc) => doc.data()).toList();
