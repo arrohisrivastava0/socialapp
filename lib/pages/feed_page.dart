@@ -99,6 +99,10 @@ class _FeedPageState extends State<FeedPage> {
     super.initState();
   }
 
+  Future<void> refreshFeed() async {
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -116,7 +120,7 @@ class _FeedPageState extends State<FeedPage> {
           } else if (snapshot.hasError) {
             return const Center(child: Text("Error loading posts."));
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text("No posts to display."));
+            return const Center(child: Text("You have no life"));
           }
 
           final posts = snapshot.data!;
