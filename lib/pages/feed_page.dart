@@ -137,9 +137,6 @@ class _FeedPageState extends State<FeedPage> {
               itemBuilder: (context, index) {
                 final post = posts[index];
                 return WallPostTile(
-                  // title: Text(post['content']),
-                  // subtitle: Text(post['userId']),
-                  // trailing: Text((post['timestamp'] as Timestamp).toDate().toString()),
                   content: post['content'],
                   userId: post['userId'],
                   timestamp: post['timestamp']

@@ -8,6 +8,7 @@ import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:socialapp/components/my_button.dart';
 
 import '../components/my_textfield.dart';
+import '../components/wall_post_tile.dart';
 import '../helper/confirmation_dialogue.dart';
 import '../helper/helper_dialogue.dart';
 import 'connections_list_page.dart';
@@ -96,6 +97,19 @@ class _UserProfilePageState extends State<UserProfilePage> {
     }
   }
 
+  Stream<List<Map<String, dynamic>>> fetchFeedPosts() {
+    final currentUserId = FirebaseAuth.instance.currentUser!.uid;
+      // Fetch posts based on connections
+      return FirebaseFirestore.instance
+          .collection('Posts')
+          .where('userId', isEqualTo: currentUserId)
+      // .orderBy('timestamp', descending: true)
+          .snapshots()
+          .map((querySnapshot) {
+        return querySnapshot.docs.map((doc) => doc.data()).toList();
+      });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -126,24 +140,67 @@ class _UserProfilePageState extends State<UserProfilePage> {
             userName=user!['username'];
             nameTextController.text=name;
             bioTextController.text=bio;
-            return Column(
-              children: [
-                SizedBox(height: 30,),
-                Text(user!['name']),
-                Text(user!['bio']),
-                SizedBox(height: 30,),
-                GestureDetector(
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ConnectionsListPage( userId: currentUser!.uid,),
-                    ),
+            return SingleChildScrollView(
+              physics: BouncingScrollPhysics(),
+              child: Column(
+                children: [
+                  SizedBox(height: 30,),
+                  CircleAvatar(
+                    backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+                    radius: 50,
+                    child: Text(user!['name'][0].toUpperCase(), style: TextStyle(fontSize: 30),),
                   ),
-                  child: Text("$connectionCount connections"),
-                ),
-                const SizedBox(height: 30),
-                MyButton(onTap: showMenu, btnText: "Complete your profile")
-              ],
+                  SizedBox(height: 10,),
+                  Text(user!['name'], style: TextStyle(fontSize: 25),),
+                  Text(user!['bio'], style: TextStyle(fontSize: 17),),
+                  SizedBox(height: 30,),
+                  GestureDetector(
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ConnectionsListPage( userId: currentUser!.uid,),
+                      ),
+                    ),
+                    child: Text("$connectionCount connections"),
+                  ),
+                  const SizedBox(height: 30),
+                  MyButton(onTap: showMenu, btnText: "Edit your profile"),
+                  const SizedBox(height: 40),
+                  Text("P O S T S", style: TextStyle(fontSize: 20),),
+                  Divider(
+                    color: Theme.of(context).colorScheme.inversePrimary,
+                    height: 6,
+                    thickness: 1,
+                    indent: 13,
+                    endIndent: 13,
+                  ),
+                  const SizedBox(height: 20),
+                  StreamBuilder<List<Map<String, dynamic>>>(
+                    stream: fetchFeedPosts(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      } else if (snapshot.hasError) {
+                        return const Center(child: Text("Error loading posts."));
+                      } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                        return const Center(child: Text("You have no opinions"));
+                      }
+
+                      final posts = snapshot.data!;
+                      return Column(  // Use Column instead of ListView to list posts without scrolling
+                        children: posts.map((post) {
+                          return WallPostTile(
+                            content: post['content'],
+                            userId: post['userId'],
+                            timestamp: post['timestamp'],
+                          );
+                        }).toList(),
+                      );
+                    },
+                  ),
+                ],
+
+              ),
             );
           }
 
