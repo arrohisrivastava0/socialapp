@@ -13,6 +13,8 @@ class FeedPage extends StatefulWidget {
 class _FeedPageState extends State<FeedPage> {
   final TextEditingController feedTextController= TextEditingController();
   List<String> userPosts = [];
+  List<String> connections=[];
+  // late String currentUserId;
 
   // Function to show the popup dialog
   void showPostDialog() {
@@ -43,7 +45,7 @@ class _FeedPageState extends State<FeedPage> {
             ElevatedButton(
               onPressed: () async {
                 if (feedTextController.text.isNotEmpty) {
-                  await postFeed(feedTextController.text);
+                  await postNewFeed(feedTextController.text);
                   feedTextController.clear();
                   Navigator.pop(context); // Close the dialog
                 }
@@ -59,130 +61,43 @@ class _FeedPageState extends State<FeedPage> {
     );
   }
 
-  Future<void> postFeed(String post) async {
-    try {
-      final currentUserId = FirebaseAuth.instance.currentUser!.uid;
-      final connectionDocRef = FirebaseFirestore.instance.collection("UserPosts").doc(currentUserId);
-      final allConnectionDocRef = FirebaseFirestore.instance.collection("UserPosts").doc("AllPosts");
-      // Add a post with a timestamp directly to the document
-      await connectionDocRef.set({
-        'posts': FieldValue.arrayUnion([
-          {
-            'post': post,
-            'timestamp': Timestamp.now(), // Use Timestamp.now() for the timestamp
-          }
-        ]),
-      }, SetOptions(merge: true)); // Merge ensures the document is created if it doesn't exist
+  Stream<List<Map<String, dynamic>>> fetchFeedPosts() {
+    final currentUserId = FirebaseAuth.instance.currentUser!.uid;
 
-      await allConnectionDocRef.set({
-        currentUserId : FieldValue.arrayUnion([
-          {
-            'post': post,
-            'timestamp': Timestamp.now(), // Use Timestamp.now() for the timestamp
-          }
-        ]),
-      }, SetOptions(merge: true));
-    } catch (e) {
-      print("Error posting feed: $e");
-    }
+    // Create a stream for user connections
+    return FirebaseFirestore.instance
+        .collection('Users')
+        .doc(currentUserId)
+        .snapshots()
+        .asyncExpand((userDoc) {
+      final connections = List<String>.from(userDoc.data()?['connections'] ?? []);
+      connections.add(currentUserId); // Include current user's posts in the feed
+
+      // Fetch posts based on connections
+      return FirebaseFirestore.instance
+          .collection('Posts')
+          .where('userId', whereIn: connections)
+          .orderBy('timestamp', descending: true)
+          .snapshots()
+          .map((querySnapshot) {
+        return querySnapshot.docs.map((doc) => doc.data()).toList();
+      });
+    });
   }
 
+  Future<void> postNewFeed(String content) async {
+    final currentUserId = FirebaseAuth.instance.currentUser!.uid;
+    await FirebaseFirestore.instance.collection('Posts').add({
+      'userId': currentUserId,
+      'content': content,
+      'timestamp': Timestamp.now(),
+    });
+  }
 
-  // Stream<List<Map<String, dynamic>>> getAllConnectedUserPosts() async* {
-  //   final currentUserId = FirebaseAuth.instance.currentUser!.uid;
-  //
-  //   // Fetch connections
-  //   final connectionsSnapshot = await FirebaseFirestore.instance
-  //       .collection("UserConnections")
-  //       .doc(currentUserId)
-  //       .get();
-  //   final connections = List<String>.from(connectionsSnapshot.data()?['connections'] ?? []);
-  //
-  //   // Create a list of streams for each user's posts
-  //   final streams = connections.map((userId) {
-  //     return FirebaseFirestore.instance
-  //         .collection("UserPosts")
-  //         .doc(userId)
-  //         .snapshots()
-  //         .map((snapshot) {
-  //       if (snapshot.exists) {
-  //         final List<dynamic> rawPosts = snapshot.data()?['posts'] ?? [];
-  //         return rawPosts.map((post) => post as Map<String, dynamic>).toList();
-  //       }
-  //       return [];
-  //     });
-  //   }).toList();
-  //
-  //   // Combine streams and yield a single stream of posts
-  //   final streamGroup = StreamGroup<List<Map<String, dynamic>>>();
-  //
-  //   // Add each stream to the group
-  //   for (var stream in streams) {
-  //     streamGroup.add(stream);
-  //   }
-  //
-  //   // Listen to all streams and emit the combined data
-  //   await for (var postsList in streamGroup.stream) {
-  //     List<Map<String, dynamic>> allPosts = [];
-  //
-  //     // Combine all posts and sort by timestamp
-  //     for (var posts in postsList) {
-  //       allPosts.addAll(posts);
-  //     }
-  //
-  //     allPosts.sort((a, b) {
-  //       final timeA = (a['timestamp'] as Timestamp).toDate();
-  //       final timeB = (b['timestamp'] as Timestamp).toDate();
-  //       return timeB.compareTo(timeA); // Newest to oldest
-  //     });
-  //
-  //     // Yield the sorted posts
-  //     yield allPosts;
-  //   }
-  // }
-
-  // Stream<List<Map<String, dynamic>>> getAllConnectedUserPosts() async* {
-  //   final currentUserId = FirebaseAuth.instance.currentUser!.uid;
-  //
-  //   // Fetch connections
-  //   final connectionsSnapshot = await FirebaseFirestore.instance
-  //       .collection("UserConnections")
-  //       .doc(currentUserId)
-  //       .get();
-  //   final connections = List<String>.from(connectionsSnapshot.data()?['connections'] ?? []);
-  //
-  //   // Listen to posts of connected users
-  //   final streams = connections.map((userId) {
-  //     return FirebaseFirestore.instance
-  //         .collection("UserPosts")
-  //         .doc(userId)
-  //         .snapshots()
-  //         .map((snapshot) {
-  //       if (snapshot.exists) {
-  //         final List<dynamic> rawPosts = snapshot.data()?['posts'] ?? [];
-  //         return rawPosts.map((post) => post as Map<String, dynamic>).toList();
-  //       }
-  //       return [];
-  //     });
-  //   });
-  //
-  //   // Combine streams and sort by timestamp
-  //   yield* Stream<List<Map<String, dynamic>>>.multi((controller) {
-  //     final subscriptions = streams.map((stream) {
-  //       return stream.listen((userPosts) {
-  //         final allPosts = [...userPosts].toList();
-  //         allPosts.sort((a, b) {
-  //           final timeA = (a['timestamp'] as Timestamp).toDate();
-  //           final timeB = (b['timestamp'] as Timestamp).toDate();
-  //           return timeB.compareTo(timeA); // Newest to oldest
-  //         });
-  //         controller.add(allPosts);
-  //       });
-  //     });
-  //     return () => subscriptions.forEach((subscription) => subscription.cancel());
-  //   });
-  // }
-
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -193,32 +108,31 @@ class _FeedPageState extends State<FeedPage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
 
-      // body: StreamBuilder<DocumentSnapshot>(
-      //   stream: FirebaseFirestore.instance
-      //       .collection("UserPosts")
-      //       .doc("AllPosts")
-      //       .snapshots(),
-      //   builder: (context, snapshot) {
-      //     if (snapshot.hasError) {
-      //       return Center(child: Text('Error loading posts.'));
-      //     }
-      //     if (snapshot.connectionState == ConnectionState.waiting) {
-      //       return const Center(child: CircularProgressIndicator());
-      //     }
-      //
-      //     final data = snapshot.data?.data() as Map<String, dynamic>?;
-      //     final userPosts = snapshot.data?['posts'] as List<Map<String, dynamic>>?;
-      //     if (userPosts == null || userPosts.isEmpty) {
-      //       return Center(
-      //         child: Text(
-      //           'You have no social life.',
-      //           style: Theme.of(context).textTheme.bodyLarge,
-      //         ),
-      //       );
-      //     }
-      //   },
-      //
-      // ),
+      body: StreamBuilder<List<Map<String, dynamic>>>(
+        stream: fetchFeedPosts(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return const Center(child: Text("Error loading posts."));
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return const Center(child: Text("No posts to display."));
+          }
+
+          final posts = snapshot.data!;
+          return ListView.builder(
+            itemCount: posts.length,
+            itemBuilder: (context, index) {
+              final post = posts[index];
+              return ListTile(
+                title: Text(post['content']),
+                subtitle: Text(post['userId']),
+                trailing: Text((post['timestamp'] as Timestamp).toDate().toString()),
+              );
+            },
+          );
+        },
+      ),
 
       floatingActionButton: FloatingActionButton(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
@@ -230,18 +144,4 @@ class _FeedPageState extends State<FeedPage> {
     );
   }
 
-// Stream<List<Map<String, dynamic>>> getUserPosts() async* {
-//   final currentUserId = FirebaseAuth.instance.currentUser!.uid;
-//   final connectionDocRef = FirebaseFirestore.instance.collection("UserPosts").doc(currentUserId);
-//
-//   connectionDocRef.snapshots().listen((snapshot) {
-//     if (snapshot.exists) {
-//       final List<dynamic> rawPosts = snapshot.data()?['posts'] ?? [];
-//       final posts = rawPosts.map((post) => post as Map<String, dynamic>).toList();
-//       yield posts;
-//     } else {
-//       yield [];
-//     }
-//   });
-// }
 }
