@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
+import 'package:socialapp/components/wall_post_tile.dart';
 
 class FeedPage extends StatefulWidget {
   const FeedPage({super.key});
@@ -135,10 +136,13 @@ class _FeedPageState extends State<FeedPage> {
               itemCount: posts.length,
               itemBuilder: (context, index) {
                 final post = posts[index];
-                return ListTile(
-                  title: Text(post['content']),
-                  subtitle: Text(post['userId']),
-                  trailing: Text((post['timestamp'] as Timestamp).toDate().toString()),
+                return WallPostTile(
+                  // title: Text(post['content']),
+                  // subtitle: Text(post['userId']),
+                  // trailing: Text((post['timestamp'] as Timestamp).toDate().toString()),
+                  content: post['content'],
+                  userId: post['userId'],
+                  timestamp: post['timestamp']
                 );
               },
             );
