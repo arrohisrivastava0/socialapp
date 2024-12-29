@@ -28,18 +28,23 @@ class _WallPostTileState extends State<WallPostTile> {
   int likeCount = 0;
   int commentCount = 0;
 
+  @override
+  void initState() {
+    super.initState();
+    _checkIfLiked();
+  }
+
+
   Future<void> _checkIfLiked() async {
     final currentUserId = FirebaseAuth.instance.currentUser!.uid;
 
     final postDoc = await FirebaseFirestore.instance
         .collection('Posts')
-        .doc(widget.postId) // Use the specific postId
+        .doc(widget.postId)
         .get();
 
     if (postDoc.exists) {
-      // Get the likes array
-      final likes =
-          List<Map<String, dynamic>>.from(postDoc.data()?['likes'] ?? []);
+      final likes = List<Map<String, dynamic>>.from(postDoc.data()?['likes'] ?? []);
 
       setState(() {
         isLiked = likes.any((like) => like['userId'] == currentUserId);
@@ -51,30 +56,30 @@ class _WallPostTileState extends State<WallPostTile> {
   Future<void> likePost() async {
     final currentUserId = FirebaseAuth.instance.currentUser!.uid;
 
-    final postRef =
-        FirebaseFirestore.instance.collection("Posts").doc(widget.postId);
-
-    final likeData = {
-      'userId': currentUserId,
-      'timestamp': Timestamp.now(),
-    };
+    final postRef = FirebaseFirestore.instance.collection("Posts").doc(widget.postId);
 
     if (isLiked) {
+      final postDoc = await postRef.get();
+      final likes = List<Map<String, dynamic>>.from(postDoc.data()?['likes'] ?? []);
       // Unlike the post
       await postRef.update({
-        'likes': FieldValue.arrayRemove([currentUserId]),
+        'likes': FieldValue.arrayRemove([likes.firstWhere(
+      (like) => like['userId'] == currentUserId,)]),
       });
-      await _checkIfLiked();
+      setState(() {
+        isLiked = false;
+        likeCount -= 1;
+      });
     } else {
       // Like the post
       await postRef.update({
-        'likes': FieldValue.arrayUnion([likeData]),
+        'likes': FieldValue.arrayUnion([{'userId': currentUserId, 'timestamp': Timestamp.now()}]),
       });
-      await _checkIfLiked();
+      setState(() {
+        isLiked = true;
+        likeCount += 1;
+      });
     }
-
-    // Refresh like state
-    await _checkIfLiked();
   }
 
   Future<void> addComment(String postId, String content) async {
@@ -162,7 +167,11 @@ class _WallPostTileState extends State<WallPostTile> {
                             final comment =
                                 comments[index].data() as Map<String, dynamic>;
                             return ListTile(
-                              leading: const Icon(Icons.account_circle),
+                              leading: CircleAvatar(
+                                backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+                                radius: 15,
+                                child: Text(comment['username'][0].toUpperCase(), style: TextStyle(fontSize: 15),),
+                              ),
                               title: GestureDetector(
                                 child: Text(comment['username']),
                                 onTap: () {
@@ -203,26 +212,6 @@ class _WallPostTileState extends State<WallPostTile> {
                                   ),
                                 ],
                               ),
-
-                              // trailing: Column(
-                              //   mainAxisSize: MainAxisSize.min,
-                              //   children: [
-                              //     IconButton(
-                              //       iconSize: 20,
-                              //       onPressed: likePost,
-                              //       icon: Icon(
-                              //         isLiked ? Icons.favorite: Icons.favorite_border,
-                              //         color: isLiked ? Colors.red[700] : Theme.of(context).colorScheme.inversePrimary,
-                              //       ),
-                              //     ),
-                              //     Text('$likeCount',
-                              //       style: TextStyle(
-                              //           color: Theme.of(context).colorScheme.inversePrimary,
-                              //         fontSize: 10
-                              //       ),
-                              //     ),
-                              //   ],
-                              // ),
                             );
                           },
                         );
@@ -287,11 +276,12 @@ class _WallPostTileState extends State<WallPostTile> {
               children: [
                 CircleAvatar(
                   backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+                  radius: 20,
                   child: Text(
                     widget.username.isNotEmpty
                         ? widget.username[0].toUpperCase()
                         : '?',
-                    style: const TextStyle(color: Colors.white),
+                    style: const TextStyle(fontSize: 20),
                   ),
                 ),
                 const SizedBox(width: 12.0),
@@ -310,7 +300,7 @@ class _WallPostTileState extends State<WallPostTile> {
                       Text(
                         widget.timestamp.toDate().toLocal().toString(),
                         style: TextStyle(
-                          fontSize: 12.0,
+                          fontSize: 14.0,
                           color: Colors.grey[600],
                         ),
                       ),
