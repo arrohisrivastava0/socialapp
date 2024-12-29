@@ -190,6 +190,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                       return Column(  // Use Column instead of ListView to list posts without scrolling
                         children: posts.map((post) {
                           return WallPostTile(
+                            postId: post['postId'],
                             content: post['content'],
                             userId: post['userId'],
                             timestamp: post['timestamp'],
