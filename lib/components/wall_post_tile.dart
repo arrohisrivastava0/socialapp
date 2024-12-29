@@ -130,12 +130,17 @@ class _WallPostTileState extends State<WallPostTile> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                TextButton.icon(
-                  onPressed: () {
-                    // Like action
-                  },
-                  icon: Icon(Icons.thumb_up_alt_outlined, size: 18, color: Theme.of(context).colorScheme.inversePrimary,),
-                  label: Text("Like", style: TextStyle(color: Theme.of(context).colorScheme.inversePrimary),),
+                Row(
+                  children: [
+                    IconButton(
+                      onPressed: likePost,
+                      icon: Icon(
+                        isLiked ? Icons.thumb_up : Icons.thumb_up_alt_outlined,
+                        color: isLiked ? Colors.red[700] : Theme.of(context).colorScheme.inversePrimary,
+                      ),
+                    ),
+                    Text('$likeCount', style: TextStyle(color: Theme.of(context).colorScheme.inversePrimary),),
+                  ],
                 ),
                 TextButton.icon(
                   onPressed: () {
