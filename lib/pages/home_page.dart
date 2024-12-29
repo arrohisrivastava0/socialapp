@@ -42,6 +42,7 @@ class _HomePageState extends State<HomePage> {
         children: _pages,
       ),
       bottomNavigationBar: CurvedNavigationBar(
+        color: Theme.of(context).colorScheme.onPrimary,
         animationDuration: Duration(milliseconds: 200),
         backgroundColor: Colors.transparent,
         index: _selectedIndex,

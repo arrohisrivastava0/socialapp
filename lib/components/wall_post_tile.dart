@@ -1,7 +1,9 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class WallPostTile extends StatelessWidget {
+class WallPostTile extends StatefulWidget {
+  final String postId;
   final String content;
   final String userId;
   final Timestamp timestamp;
@@ -11,7 +13,57 @@ class WallPostTile extends StatelessWidget {
     required this.content,
     required this.userId,
     required this.timestamp,
+    required this.postId,
   }) : super(key: key);
+
+  @override
+  State<WallPostTile> createState() => _WallPostTileState();
+}
+
+class _WallPostTileState extends State<WallPostTile> {
+  bool isLiked = false;
+  int likeCount = 0;
+
+  Future<void> _checkIfLiked() async {
+    final currentUserId = FirebaseAuth.instance.currentUser!.uid;
+
+    final postDoc = await FirebaseFirestore.instance
+        .collection('Posts')
+        .doc(widget.postId) // Use the specific postId
+        .get();
+
+    if (postDoc.exists) {
+      final likes = List<String>.from(postDoc.data()?['likes'] ?? []);
+      setState(() {
+        isLiked = likes.contains(currentUserId);
+        likeCount = likes.length;
+      });
+    }
+  }
+
+
+  Future<void> likePost() async {
+    final currentUserId = FirebaseAuth.instance.currentUser!.uid;
+
+    final postRef = FirebaseFirestore.instance.collection("Posts").doc(widget.postId);
+
+    if (isLiked) {
+      // Unlike the post
+      await postRef.update({
+        'likes': FieldValue.arrayRemove([currentUserId]),
+      });
+    } else {
+      // Like the post
+      await postRef.update({
+        'likes': FieldValue.arrayUnion([currentUserId]),
+      });
+    }
+
+    // Refresh like state
+    await _checkIfLiked();
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +86,7 @@ class WallPostTile extends StatelessWidget {
                 CircleAvatar(
                   backgroundColor: Theme.of(context).colorScheme.inversePrimary,
                   child: Text(
-                    userId.isNotEmpty ? userId[0].toUpperCase() : '?',
+                    widget.userId.isNotEmpty ? widget.userId[0].toUpperCase() : '?',
                     style: const TextStyle(color: Colors.white),
                   ),
                 ),
@@ -44,7 +96,7 @@ class WallPostTile extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        userId,
+                        widget.userId,
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16.0,
@@ -52,7 +104,7 @@ class WallPostTile extends StatelessWidget {
                       ),
                       const SizedBox(height: 4.0),
                       Text(
-                        timestamp.toDate().toLocal().toString(),
+                        widget.timestamp.toDate().toLocal().toString(),
                         style: TextStyle(
                           fontSize: 12.0,
                           color: Colors.grey[600],
@@ -67,7 +119,7 @@ class WallPostTile extends StatelessWidget {
 
             // Post Content
             Text(
-              content,
+              widget.content,
               style: const TextStyle(
                 fontSize: 14.0,
               ),

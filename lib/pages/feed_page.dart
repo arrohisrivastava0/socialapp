@@ -14,9 +14,6 @@ class FeedPage extends StatefulWidget {
 
 class _FeedPageState extends State<FeedPage> {
   final TextEditingController feedTextController= TextEditingController();
-  // List<String> userPosts = [];
-  // List<String> connections=[];
-  // late String currentUserId;
 
   // Function to show the popup dialog
   void showPostDialog() {
@@ -82,7 +79,11 @@ class _FeedPageState extends State<FeedPage> {
           // .orderBy('timestamp', descending: true)
           .snapshots()
           .map((querySnapshot) {
-        return querySnapshot.docs.map((doc) => doc.data()).toList();
+        return querySnapshot.docs.map((doc){
+          final data = doc.data();
+          data['postId'] = doc.id; // Include postId for each document
+          return data;
+        }).toList();
       });
     });
   }
@@ -137,6 +138,7 @@ class _FeedPageState extends State<FeedPage> {
               itemBuilder: (context, index) {
                 final post = posts[index];
                 return WallPostTile(
+                  postId: post['postId'],
                   content: post['content'],
                   userId: post['userId'],
                   timestamp: post['timestamp']
@@ -153,7 +155,6 @@ class _FeedPageState extends State<FeedPage> {
         onPressed: showPostDialog,
         child: const Icon(Icons.edit), // Pencil icon
       ),
-
     );
   }
 

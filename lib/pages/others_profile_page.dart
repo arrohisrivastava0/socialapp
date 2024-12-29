@@ -61,10 +61,17 @@ class _OthersProfilePageState extends State<OthersProfilePage> {
         .collection("Connections")
         .doc(currentUserId);
 
+    final otherConnectionDocRef= FirebaseFirestore.instance
+        .collection("Connections")
+        .doc(widget.userId);
+
     if (isConnection) {
       // Remove the connection
       await connectionDocRef.update({
         'to': FieldValue.arrayRemove([widget.userId])
+      });
+      await otherConnectionDocRef.update({
+        'to': FieldValue.arrayRemove([currentUserId])
       });
       setState(() {
         isConnection = false;
@@ -73,6 +80,9 @@ class _OthersProfilePageState extends State<OthersProfilePage> {
       // Add the connection
       await connectionDocRef.set({
         'to': FieldValue.arrayUnion([widget.userId])
+      }, SetOptions(merge: true));
+      await otherConnectionDocRef.set({
+        'to': FieldValue.arrayUnion([currentUserId])
       }, SetOptions(merge: true));
       setState(() {
         isConnection = true;
