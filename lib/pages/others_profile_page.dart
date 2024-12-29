@@ -8,7 +8,6 @@ import 'package:socialapp/pages/user_profile_page.dart';
 
 import '../components/my_button.dart';
 import '../components/wall_post_tile.dart';
-import 'connections_list_page.dart';
 
 class OthersProfilePage extends StatefulWidget {
   final String userId;
@@ -224,8 +223,8 @@ class _OthersProfilePageState extends State<OthersProfilePage> {
                           return WallPostTile(
                             postId: post['postId'] ?? 'Unknown Post ID',
                             content: post['content'] ?? 'No content available',
-                            userId: post['username'] ?? 'Unknown user',
                             timestamp: post['timestamp']?? 'No timestamp',
+                            username: post['username'] ?? 'Unknown user',
                           );
                         }).toList(),
                       );

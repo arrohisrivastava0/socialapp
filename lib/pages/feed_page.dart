@@ -148,7 +148,7 @@ class _FeedPageState extends State<FeedPage> {
                 return WallPostTile(
                   postId: post['postId'] ?? 'Unknown Post ID',
                   content: post['content'] ?? 'No content available',
-                  userId: post['username'] ?? 'Unknown user',
+                  username: post['username'] ?? 'Unknown user',
                   timestamp: post['timestamp']?? 'No timestamp',
                 );
               },

@@ -2,16 +2,18 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../pages/others_profile_page.dart';
+
 class WallPostTile extends StatefulWidget {
   final String postId;
   final String content;
-  final String userId;
+  final String username;
   final Timestamp timestamp;
 
   const WallPostTile({
     Key? key,
     required this.content,
-    required this.userId,
+    required this.username,
     required this.timestamp,
     required this.postId,
   }) : super(key: key);
@@ -21,9 +23,10 @@ class WallPostTile extends StatefulWidget {
 }
 
 class _WallPostTileState extends State<WallPostTile> {
-  final TextEditingController commentTextController= TextEditingController();
+  final TextEditingController commentTextController = TextEditingController();
   bool isLiked = false;
   int likeCount = 0;
+  int commentCount = 0;
 
   Future<void> _checkIfLiked() async {
     final currentUserId = FirebaseAuth.instance.currentUser!.uid;
@@ -35,7 +38,8 @@ class _WallPostTileState extends State<WallPostTile> {
 
     if (postDoc.exists) {
       // Get the likes array
-      final likes = List<Map<String, dynamic>>.from(postDoc.data()?['likes'] ?? []);
+      final likes =
+          List<Map<String, dynamic>>.from(postDoc.data()?['likes'] ?? []);
 
       setState(() {
         isLiked = likes.any((like) => like['userId'] == currentUserId);
@@ -44,11 +48,11 @@ class _WallPostTileState extends State<WallPostTile> {
     }
   }
 
-
   Future<void> likePost() async {
     final currentUserId = FirebaseAuth.instance.currentUser!.uid;
 
-    final postRef = FirebaseFirestore.instance.collection("Posts").doc(widget.postId);
+    final postRef =
+        FirebaseFirestore.instance.collection("Posts").doc(widget.postId);
 
     final likeData = {
       'userId': currentUserId,
@@ -61,7 +65,6 @@ class _WallPostTileState extends State<WallPostTile> {
         'likes': FieldValue.arrayRemove([currentUserId]),
       });
       await _checkIfLiked();
-
     } else {
       // Like the post
       await postRef.update({
@@ -73,7 +76,6 @@ class _WallPostTileState extends State<WallPostTile> {
     // Refresh like state
     await _checkIfLiked();
   }
-
 
   Future<void> addComment(String postId, String content) async {
     final currentUserId = FirebaseAuth.instance.currentUser!.uid;
@@ -115,7 +117,9 @@ class _WallPostTileState extends State<WallPostTile> {
           builder: (context, scrollController) {
             return Padding(
               padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom, // Adjust for keyboard
+                bottom: MediaQuery.of(context)
+                    .viewInsets
+                    .bottom, // Adjust for keyboard
               ),
               child: Column(
                 children: [
@@ -134,14 +138,18 @@ class _WallPostTileState extends State<WallPostTile> {
                           .collection('Posts')
                           .doc(postId)
                           .collection('Comments')
-                          .orderBy('timestamp', descending: true)
+                          .orderBy('timestamp', descending: false)
                           .snapshots(),
                       builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
-                          return const Center(child: CircularProgressIndicator());
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Center(
+                              child: CircularProgressIndicator());
                         } else if (snapshot.hasError) {
-                          return const Center(child: Text("Error loading comments"));
-                        } else if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                          return const Center(
+                              child: Text("Error loading comments"));
+                        } else if (!snapshot.hasData ||
+                            snapshot.data!.docs.isEmpty) {
                           return const Center(child: Text("No comments yet."));
                         }
 
@@ -151,15 +159,70 @@ class _WallPostTileState extends State<WallPostTile> {
                           controller: scrollController,
                           itemCount: comments.length,
                           itemBuilder: (context, index) {
-                            final comment = comments[index].data() as Map<String, dynamic>;
+                            final comment =
+                                comments[index].data() as Map<String, dynamic>;
                             return ListTile(
                               leading: const Icon(Icons.account_circle),
-                              title: Text(comment['username']),
-                              subtitle: Text(comment['content']),
-                              trailing: Text(
-                                (comment['timestamp'] as Timestamp).toDate().toString(),
-                                style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                              title: GestureDetector(
+                                child: Text(comment['username']),
+                                onTap: () {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              OthersProfilePage(
+                                                  userId: comment['userId'])));
+                                },
                               ),
+                              // title: Text(comment['username']),
+                              subtitle: Text(comment['content']),
+                              // trailing: Text(
+                              //   (comment['timestamp'] as Timestamp).toDate().toString(),
+                              //   style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                              // ),
+                              trailing: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  GestureDetector(
+                                    onTap: () async {
+
+                                    },
+                                    child: Icon(
+                                      isLiked ? Icons.favorite : Icons.favorite_border, // Dynamic like icon
+                                      color: isLiked ? Colors.red : Colors.grey,
+                                      size: 20,
+                                    ),
+                                  ),
+                                  SizedBox(height: 4),
+                                  Text(
+                                    '${comment['likeCount']}', // Replace with your like count
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey, // Adjust color
+                                    ),
+                                  ),
+                                ],
+                              ),
+
+                              // trailing: Column(
+                              //   mainAxisSize: MainAxisSize.min,
+                              //   children: [
+                              //     IconButton(
+                              //       iconSize: 20,
+                              //       onPressed: likePost,
+                              //       icon: Icon(
+                              //         isLiked ? Icons.favorite: Icons.favorite_border,
+                              //         color: isLiked ? Colors.red[700] : Theme.of(context).colorScheme.inversePrimary,
+                              //       ),
+                              //     ),
+                              //     Text('$likeCount',
+                              //       style: TextStyle(
+                              //           color: Theme.of(context).colorScheme.inversePrimary,
+                              //         fontSize: 10
+                              //       ),
+                              //     ),
+                              //   ],
+                              // ),
                             );
                           },
                         );
@@ -167,7 +230,8 @@ class _WallPostTileState extends State<WallPostTile> {
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 10),
                     child: Row(
                       children: [
                         Expanded(
@@ -175,15 +239,18 @@ class _WallPostTileState extends State<WallPostTile> {
                             controller: commentTextController,
                             decoration: const InputDecoration(
                               hintText: "Add a comment...",
-                              border: OutlineInputBorder(),
+                              border: InputBorder.none,
                             ),
                           ),
                         ),
                         IconButton(
-                          icon: Icon(Icons.send, color: Theme.of(context).colorScheme.inversePrimary),
+                          icon: Icon(Icons.send,
+                              color:
+                                  Theme.of(context).colorScheme.inversePrimary),
                           onPressed: () async {
                             if (commentTextController.text.isNotEmpty) {
-                              await addComment(postId, commentTextController.text);
+                              await addComment(
+                                  postId, commentTextController.text);
                               commentTextController.clear();
                             }
                           },
@@ -221,7 +288,9 @@ class _WallPostTileState extends State<WallPostTile> {
                 CircleAvatar(
                   backgroundColor: Theme.of(context).colorScheme.inversePrimary,
                   child: Text(
-                    widget.userId.isNotEmpty ? widget.userId[0].toUpperCase() : '?',
+                    widget.username.isNotEmpty
+                        ? widget.username[0].toUpperCase()
+                        : '?',
                     style: const TextStyle(color: Colors.white),
                   ),
                 ),
@@ -231,7 +300,7 @@ class _WallPostTileState extends State<WallPostTile> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        widget.userId,
+                        widget.username,
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16.0,
@@ -270,20 +339,34 @@ class _WallPostTileState extends State<WallPostTile> {
                     IconButton(
                       onPressed: likePost,
                       icon: Icon(
-                        isLiked ? Icons.favorite: Icons.favorite_border,
-                        color: isLiked ? Colors.red[700] : Theme.of(context).colorScheme.inversePrimary,
+                        isLiked ? Icons.favorite : Icons.favorite_border,
+                        color: isLiked
+                            ? Colors.red[700]
+                            : Theme.of(context).colorScheme.inversePrimary,
                       ),
                     ),
-                    Text('$likeCount', style: TextStyle(color: Theme.of(context).colorScheme.inversePrimary),),
+                    Text(
+                      '$likeCount',
+                      style: TextStyle(
+                          color: Theme.of(context).colorScheme.inversePrimary),
+                    ),
                   ],
                 ),
                 Row(
                   children: [
                     IconButton(
                       onPressed: () => showCommentsBottomSheet(widget.postId),
-                      icon: Icon(Icons.comment_outlined, size: 18, color: Theme.of(context).colorScheme.inversePrimary,),
+                      icon: Icon(
+                        Icons.comment_outlined,
+                        size: 18,
+                        color: Theme.of(context).colorScheme.inversePrimary,
+                      ),
                     ),
-                    Text('$likeCount', style: TextStyle(color: Theme.of(context).colorScheme.inversePrimary),),
+                    Text(
+                      '$commentCount',
+                      style: TextStyle(
+                          color: Theme.of(context).colorScheme.inversePrimary),
+                    ),
                   ],
                 ),
                 // TextButton.icon(
@@ -295,8 +378,16 @@ class _WallPostTileState extends State<WallPostTile> {
                   onPressed: () {
                     // Share action
                   },
-                  icon: Icon(Icons.share_outlined, size: 18, color: Theme.of(context).colorScheme.inversePrimary,),
-                  label: Text("Share", style: TextStyle(color: Theme.of(context).colorScheme.inversePrimary),),
+                  icon: Icon(
+                    Icons.share_outlined,
+                    size: 18,
+                    color: Theme.of(context).colorScheme.inversePrimary,
+                  ),
+                  label: Text(
+                    "Share",
+                    style: TextStyle(
+                        color: Theme.of(context).colorScheme.inversePrimary),
+                  ),
                 ),
               ],
             ),
