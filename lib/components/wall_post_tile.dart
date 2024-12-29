@@ -33,13 +33,16 @@ class _WallPostTileState extends State<WallPostTile> {
         .get();
 
     if (postDoc.exists) {
-      final likes = List<String>.from(postDoc.data()?['likes'] ?? []);
+      // Get the likes array
+      final likes = List<Map<String, dynamic>>.from(postDoc.data()?['likes'] ?? []);
+
       setState(() {
-        isLiked = likes.contains(currentUserId);
+        isLiked = likes.any((like) => like['userId'] == currentUserId);
         likeCount = likes.length;
       });
     }
   }
+
 
 
   Future<void> likePost() async {
@@ -47,15 +50,21 @@ class _WallPostTileState extends State<WallPostTile> {
 
     final postRef = FirebaseFirestore.instance.collection("Posts").doc(widget.postId);
 
+    final likeData = {
+      'userId': currentUserId,
+      'timestamp': Timestamp.now(),
+    };
+
     if (isLiked) {
       // Unlike the post
       await postRef.update({
         'likes': FieldValue.arrayRemove([currentUserId]),
       });
+
     } else {
       // Like the post
       await postRef.update({
-        'likes': FieldValue.arrayUnion([currentUserId]),
+        'likes': FieldValue.arrayUnion([likeData]),
       });
     }
 

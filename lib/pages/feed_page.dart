@@ -90,8 +90,14 @@ class _FeedPageState extends State<FeedPage> {
 
   Future<void> postNewFeed(String content) async {
     final currentUserId = FirebaseAuth.instance.currentUser!.uid;
+    final userDoc = await FirebaseFirestore.instance
+        .collection('Users')
+        .doc(currentUserId)
+        .get();
+    final username = userDoc.data()?['username'] ?? 'Anonymous';
     await FirebaseFirestore.instance.collection('Posts').add({
       'userId': currentUserId,
+      'username': username,
       'content': content,
       'timestamp': Timestamp.now(),
       'likes': [],
@@ -139,10 +145,10 @@ class _FeedPageState extends State<FeedPage> {
               itemBuilder: (context, index) {
                 final post = posts[index];
                 return WallPostTile(
-                  postId: post['postId'],
-                  content: post['content'],
-                  userId: post['userId'],
-                  timestamp: post['timestamp']
+                  postId: post['postId'] ?? 'Unknown Post ID',
+                  content: post['content'] ?? 'No content available',
+                  userId: post['username'] ?? 'Unknown user',
+                  timestamp: post['timestamp']?? 'No timestamp',
                 );
               },
             );

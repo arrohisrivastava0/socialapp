@@ -95,10 +95,6 @@ class _OthersProfilePageState extends State<OthersProfilePage> {
 
   }
 
-
-
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
