@@ -94,6 +94,7 @@ class _FeedPageState extends State<FeedPage> {
       'userId': currentUserId,
       'content': content,
       'timestamp': Timestamp.now(),
+      'likes': [],
     });
   }
 
