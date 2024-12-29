@@ -21,6 +21,7 @@ class WallPostTile extends StatefulWidget {
 }
 
 class _WallPostTileState extends State<WallPostTile> {
+  final TextEditingController commentTextController= TextEditingController();
   bool isLiked = false;
   int likeCount = 0;
 
@@ -44,7 +45,6 @@ class _WallPostTileState extends State<WallPostTile> {
   }
 
 
-
   Future<void> likePost() async {
     final currentUserId = FirebaseAuth.instance.currentUser!.uid;
 
@@ -60,12 +60,14 @@ class _WallPostTileState extends State<WallPostTile> {
       await postRef.update({
         'likes': FieldValue.arrayRemove([currentUserId]),
       });
+      await _checkIfLiked();
 
     } else {
       // Like the post
       await postRef.update({
         'likes': FieldValue.arrayUnion([likeData]),
       });
+      await _checkIfLiked();
     }
 
     // Refresh like state
@@ -73,6 +75,130 @@ class _WallPostTileState extends State<WallPostTile> {
   }
 
 
+  Future<void> addComment(String postId, String content) async {
+    final currentUserId = FirebaseAuth.instance.currentUser!.uid;
+
+    // Fetch the user's username
+    final userDoc = await FirebaseFirestore.instance
+        .collection('Users')
+        .doc(currentUserId)
+        .get();
+    final username = userDoc.data()?['username'] ?? 'Anonymous';
+
+    // Add the comment to the subcollection
+    await FirebaseFirestore.instance
+        .collection('Posts')
+        .doc(postId)
+        .collection('Comments')
+        .add({
+      'userId': currentUserId,
+      'username': username,
+      'content': content,
+      'timestamp': Timestamp.now(),
+      'likes': [],
+    });
+  }
+
+  void showCommentsBottomSheet(String postId) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return DraggableScrollableSheet(
+          expand: false,
+          initialChildSize: 0.5,
+          minChildSize: 0.5,
+          maxChildSize: 0.9,
+          builder: (context, scrollController) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom, // Adjust for keyboard
+              ),
+              child: Column(
+                children: [
+                  Container(
+                    height: 5,
+                    width: 40,
+                    margin: const EdgeInsets.only(top: 10, bottom: 10),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  Expanded(
+                    child: StreamBuilder<QuerySnapshot>(
+                      stream: FirebaseFirestore.instance
+                          .collection('Posts')
+                          .doc(postId)
+                          .collection('Comments')
+                          .orderBy('timestamp', descending: true)
+                          .snapshots(),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return const Center(child: CircularProgressIndicator());
+                        } else if (snapshot.hasError) {
+                          return const Center(child: Text("Error loading comments"));
+                        } else if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                          return const Center(child: Text("No comments yet."));
+                        }
+
+                        final comments = snapshot.data!.docs;
+
+                        return ListView.builder(
+                          controller: scrollController,
+                          itemCount: comments.length,
+                          itemBuilder: (context, index) {
+                            final comment = comments[index].data() as Map<String, dynamic>;
+                            return ListTile(
+                              leading: const Icon(Icons.account_circle),
+                              title: Text(comment['username']),
+                              subtitle: Text(comment['content']),
+                              trailing: Text(
+                                (comment['timestamp'] as Timestamp).toDate().toString(),
+                                style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: commentTextController,
+                            decoration: const InputDecoration(
+                              hintText: "Add a comment...",
+                              border: OutlineInputBorder(),
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.send, color: Theme.of(context).colorScheme.inversePrimary),
+                          onPressed: () async {
+                            if (commentTextController.text.isNotEmpty) {
+                              await addComment(postId, commentTextController.text);
+                              commentTextController.clear();
+                            }
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -144,20 +270,27 @@ class _WallPostTileState extends State<WallPostTile> {
                     IconButton(
                       onPressed: likePost,
                       icon: Icon(
-                        isLiked ? Icons.thumb_up : Icons.thumb_up_alt_outlined,
+                        isLiked ? Icons.favorite: Icons.favorite_border,
                         color: isLiked ? Colors.red[700] : Theme.of(context).colorScheme.inversePrimary,
                       ),
                     ),
                     Text('$likeCount', style: TextStyle(color: Theme.of(context).colorScheme.inversePrimary),),
                   ],
                 ),
-                TextButton.icon(
-                  onPressed: () {
-                    // Comment action
-                  },
-                  icon: Icon(Icons.comment_outlined, size: 18, color: Theme.of(context).colorScheme.inversePrimary,),
-                  label: Text("Comment", style: TextStyle(color: Theme.of(context).colorScheme.inversePrimary),),
+                Row(
+                  children: [
+                    IconButton(
+                      onPressed: () => showCommentsBottomSheet(widget.postId),
+                      icon: Icon(Icons.comment_outlined, size: 18, color: Theme.of(context).colorScheme.inversePrimary,),
+                    ),
+                    Text('$likeCount', style: TextStyle(color: Theme.of(context).colorScheme.inversePrimary),),
+                  ],
                 ),
+                // TextButton.icon(
+                //   onPressed: () => showCommentsBottomSheet(widget.postId),
+                //   icon: Icon(Icons.comment_outlined, size: 18, color: Theme.of(context).colorScheme.inversePrimary,),
+                //   label: Text("Comment", style: TextStyle(color: Theme.of(context).colorScheme.inversePrimary),),
+                // ),
                 TextButton.icon(
                   onPressed: () {
                     // Share action
