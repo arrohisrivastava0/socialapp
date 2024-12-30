@@ -160,8 +160,8 @@ class _OthersProfilePageState extends State<OthersProfilePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title:Text(userName, style: TextStyle(color: Theme.of(context).colorScheme.surface),),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        title:Text(userName, style: TextStyle(color: Theme.of(context).colorScheme.inversePrimary),),
+        backgroundColor: Theme.of(context).colorScheme.onPrimary,
 
       ),
 
