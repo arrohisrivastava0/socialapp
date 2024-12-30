@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:socialapp/pages/user_profile_page.dart';
 
 import '../pages/others_profile_page.dart';
 
@@ -8,6 +9,7 @@ class WallPostTile extends StatefulWidget {
   final String postId;
   final String content;
   final String username;
+  final String userId;
   final Timestamp timestamp;
 
   const WallPostTile({
@@ -15,7 +17,7 @@ class WallPostTile extends StatefulWidget {
     required this.content,
     required this.username,
     required this.timestamp,
-    required this.postId,
+    required this.postId, required this.userId,
   }) : super(key: key);
 
   @override
@@ -105,7 +107,7 @@ class _WallPostTileState extends State<WallPostTile> {
     final username = userDoc.data()?['username'] ?? 'Anonymous';
 
     // Add the comment to the subcollection
-    final commentRef =await FirebaseFirestore.instance
+    await FirebaseFirestore.instance
         .collection('Posts')
         .doc(postId)
         .collection('Comments')
@@ -224,6 +226,13 @@ class _WallPostTileState extends State<WallPostTile> {
                                   GestureDetector(
                                     child: Text(comment['username']),
                                     onTap: () {
+                                      if(comment['userId'] == FirebaseAuth.instance.currentUser!.uid){
+                                        Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    UserProfilePage()));
+                                      }
                                       Navigator.push(
                                           context,
                                           MaterialPageRoute(
@@ -371,11 +380,28 @@ class _WallPostTileState extends State<WallPostTile> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        widget.username,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16.0,
+                      GestureDetector(
+                        onTap: () {
+                          if(widget.userId == FirebaseAuth.instance.currentUser!.uid){
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        UserProfilePage()));
+                          }
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      OthersProfilePage(
+                                          userId: widget.userId)));
+                        },
+                        child: Text(
+                          widget.username,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16.0,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 4.0),
@@ -441,11 +467,6 @@ class _WallPostTileState extends State<WallPostTile> {
                     ),
                   ],
                 ),
-                // TextButton.icon(
-                //   onPressed: () => showCommentsBottomSheet(widget.postId),
-                //   icon: Icon(Icons.comment_outlined, size: 18, color: Theme.of(context).colorScheme.inversePrimary,),
-                //   label: Text("Comment", style: TextStyle(color: Theme.of(context).colorScheme.inversePrimary),),
-                // ),
                 TextButton.icon(
                   onPressed: () {
                     // Share action

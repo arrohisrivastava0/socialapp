@@ -150,6 +150,7 @@ class _FeedPageState extends State<FeedPage> {
                   content: post['content'] ?? 'No content available',
                   username: post['username'] ?? 'Unknown user',
                   timestamp: post['timestamp']?? 'No timestamp',
+                  userId: post['userId'] ?? 'Unknown User ID',
                 );
               },
             );

@@ -194,6 +194,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                             content: post['content'] ?? 'No content available',
                             username: post['username'] ?? 'Unknown user',
                             timestamp: post['timestamp']?? 'No timestamp',
+                            userId: post['userId'] ?? 'Unknown User ID',
                           );
                         }).toList(),
                       );

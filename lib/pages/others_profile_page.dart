@@ -225,6 +225,7 @@ class _OthersProfilePageState extends State<OthersProfilePage> {
                             content: post['content'] ?? 'No content available',
                             timestamp: post['timestamp']?? 'No timestamp',
                             username: post['username'] ?? 'Unknown user',
+                            userId: post['userId'] ?? 'Unknown User ID',
                           );
                         }).toList(),
                       );
