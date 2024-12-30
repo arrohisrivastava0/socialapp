@@ -159,6 +159,7 @@ class _FeedPageState extends State<FeedPage> {
       ),
 
       floatingActionButton: FloatingActionButton(
+        shape: const CircleBorder(),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         elevation: 20,
         onPressed: showPostDialog,
