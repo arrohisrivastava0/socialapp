@@ -39,7 +39,6 @@ class SearchPage extends StatelessWidget {
             if (snapshot.data == null) {
               return const Text("No data");
             }
-
             final users = snapshot.data!.docs;
             return Padding(
               padding: const EdgeInsets.all(5.0),

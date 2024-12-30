@@ -241,7 +241,6 @@ class _WallPostTileState extends State<WallPostTile> {
                                                     OthersProfilePage(
                                                         userId: comment['userId'])));
                                       }
-
                                     },
                                   ),
 

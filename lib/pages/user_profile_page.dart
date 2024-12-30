@@ -121,10 +121,10 @@ class _UserProfilePageState extends State<UserProfilePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title:Text(userName, style: TextStyle(color: Theme.of(context).colorScheme.surface),),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        title:Text(userName, style: TextStyle(color: Theme.of(context).colorScheme.inversePrimary),),
+        backgroundColor: Theme.of(context).colorScheme.onPrimary,
         actions: [
-          IconButton(onPressed: logout, icon: const Icon(Icons.logout), color: Theme.of(context).colorScheme.surface,)
+          IconButton(onPressed: logout, icon: const Icon(Icons.logout), color: Theme.of(context).colorScheme.inversePrimary,)
         ],
       ),
       body: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
