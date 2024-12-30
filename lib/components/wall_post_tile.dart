@@ -32,6 +32,7 @@ class _WallPostTileState extends State<WallPostTile> {
   void initState() {
     super.initState();
     _checkIfLiked();
+    _fetchCommentCount();
   }
 
 
@@ -53,11 +54,21 @@ class _WallPostTileState extends State<WallPostTile> {
     }
   }
 
+  Future<void> _fetchCommentCount() async {
+    final commentSnapshot = await FirebaseFirestore.instance
+        .collection('Posts')
+        .doc(widget.postId)
+        .collection('Comments')
+        .get();
+
+    setState(() {
+      commentCount = commentSnapshot.docs.length;
+    });
+  }
+
   Future<void> likePost() async {
     final currentUserId = FirebaseAuth.instance.currentUser!.uid;
-
     final postRef = FirebaseFirestore.instance.collection("Posts").doc(widget.postId);
-
     if (isLiked) {
       final postDoc = await postRef.get();
       final likes = List<Map<String, dynamic>>.from(postDoc.data()?['likes'] ?? []);
@@ -70,7 +81,8 @@ class _WallPostTileState extends State<WallPostTile> {
         isLiked = false;
         likeCount -= 1;
       });
-    } else {
+    }
+    else {
       // Like the post
       await postRef.update({
         'likes': FieldValue.arrayUnion([{'userId': currentUserId, 'timestamp': Timestamp.now()}]),
@@ -93,7 +105,7 @@ class _WallPostTileState extends State<WallPostTile> {
     final username = userDoc.data()?['username'] ?? 'Anonymous';
 
     // Add the comment to the subcollection
-    await FirebaseFirestore.instance
+    final commentRef =await FirebaseFirestore.instance
         .collection('Posts')
         .doc(postId)
         .collection('Comments')
@@ -104,6 +116,35 @@ class _WallPostTileState extends State<WallPostTile> {
       'timestamp': Timestamp.now(),
       'likes': [],
     });
+
+    await _fetchCommentCount();
+  }
+
+  Future<void> likeComment(String commentId) async {
+    final currentUserId = FirebaseAuth.instance.currentUser!.uid;
+    final commentRef = FirebaseFirestore.instance
+        .collection("Posts")
+        .doc(widget.postId)
+        .collection('Comments')
+        .doc(commentId);
+
+    final commentDoc = await commentRef.get();
+    final likes = List<Map<String, dynamic>>.from(commentDoc.data()?['likes'] ?? []);
+    final isCommentLiked = likes.any((like) => like['userId'] == currentUserId);
+
+    if (isCommentLiked) {
+      await commentRef.update({
+        'likes': FieldValue.arrayRemove([
+          likes.firstWhere((like) => like['userId'] == currentUserId)
+        ]),
+      });
+    } else {
+      await commentRef.update({
+        'likes': FieldValue.arrayUnion([
+          {'userId': currentUserId, 'timestamp': Timestamp.now()}
+        ]),
+      });
+    }
   }
 
   void showCommentsBottomSheet(String postId) {
@@ -159,13 +200,19 @@ class _WallPostTileState extends State<WallPostTile> {
                         }
 
                         final comments = snapshot.data!.docs;
-
                         return ListView.builder(
                           controller: scrollController,
                           itemCount: comments.length,
                           itemBuilder: (context, index) {
                             final comment =
                                 comments[index].data() as Map<String, dynamic>;
+                            final commentId = comments[index].id;
+                            final isCommentLiked = List<Map<String, dynamic>>
+                                .from(comment['likes'] ?? [])
+                                .any((like) => like['userId'] ==
+                                FirebaseAuth.instance.currentUser!.uid);
+                            final commentLikeCount =
+                                (comment['likes'] as List?)?.length ?? 0;
                             return ListTile(
                               leading: CircleAvatar(
                                 backgroundColor: Theme.of(context).colorScheme.inversePrimary,
@@ -185,27 +232,28 @@ class _WallPostTileState extends State<WallPostTile> {
                               ),
                               // title: Text(comment['username']),
                               subtitle: Text(comment['content']),
-                              // trailing: Text(
-                              //   (comment['timestamp'] as Timestamp).toDate().toString(),
-                              //   style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                              // ),
+
                               trailing: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   GestureDetector(
                                     onTap: () async {
-
+                                      await likeComment(commentId);
                                     },
                                     child: Icon(
-                                      isLiked ? Icons.favorite : Icons.favorite_border, // Dynamic like icon
-                                      color: isLiked ? Colors.red : Colors.grey,
+                                      isCommentLiked
+                                          ? Icons.favorite
+                                          : Icons.favorite_border,
+                                      color: isCommentLiked
+                                          ? Colors.red
+                                          : Colors.grey,
                                       size: 20,
                                     ),
                                   ),
                                   SizedBox(height: 4),
                                   Text(
-                                    '${comment['likeCount']}', // Replace with your like count
-                                    style: TextStyle(
+                                    '$commentLikeCount', // Replace with your like count
+                                    style: const TextStyle(
                                       fontSize: 12,
                                       color: Colors.grey, // Adjust color
                                     ),

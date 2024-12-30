@@ -40,6 +40,7 @@ class _ConnectionsListPageState extends State<ConnectionsListPage> {
   }
 
 
+
   Future<void> removeConnection(String connectedUserId) async {
     try {
       final docRef =
@@ -50,7 +51,6 @@ class _ConnectionsListPageState extends State<ConnectionsListPage> {
         if (snapshot.exists) {
           final List<dynamic> to = snapshot.data()?['to'] ?? [];
           to.remove(connectedUserId);
-
           transaction.update(docRef, {'to': to});
         }
       });

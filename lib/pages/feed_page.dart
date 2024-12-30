@@ -120,8 +120,8 @@ class _FeedPageState extends State<FeedPage> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title:Text('W  A  L  L', style: TextStyle(color: Theme.of(context).colorScheme.surface),),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        title:Text('W  A  L  L', style: TextStyle(color: Theme.of(context).colorScheme.inversePrimary),),
+        backgroundColor: Theme.of(context).colorScheme.onPrimary,
       ),
 
       body: LiquidPullToRefresh(
