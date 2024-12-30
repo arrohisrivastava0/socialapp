@@ -321,19 +321,19 @@ class _WallPostTileState extends State<WallPostTile> {
     final difference = now.difference(timestamp.toDate());
 
     if (difference.inSeconds < 60) {
-      return ' ${difference.inSeconds}s ago';
+      return ' ${difference.inSeconds}s';
     } else if (difference.inMinutes < 60) {
-      return ' ${difference.inMinutes}m ago';
+      return ' ${difference.inMinutes}m';
     } else if (difference.inHours < 24) {
-      return ' ${difference.inHours}h ago';
+      return ' ${difference.inHours}h';
     } else if (difference.inDays < 7) {
-      return ' ${difference.inDays}d ago';
+      return ' ${difference.inDays}d';
     } else if (difference.inDays < 30) {
-      return ' ${(difference.inDays / 7).floor()}w ago';
+      return ' ${(difference.inDays / 7).floor()}w';
     } else if (difference.inDays < 365) {
-      return ' ${(difference.inDays / 30).floor()}mo ago';
+      return ' ${(difference.inDays / 30).floor()}mo';
     } else {
-      return ' ${(difference.inDays / 365).floor()}y ago';
+      return ' ${(difference.inDays / 365).floor()}y';
     }
   }
 
@@ -380,7 +380,7 @@ class _WallPostTileState extends State<WallPostTile> {
                       ),
                       const SizedBox(height: 4.0),
                       Text(
-                        widget.timestamp.toDate().toLocal().toString(),
+                        '${timeAgo(widget.timestamp)} ago',
                         style: TextStyle(
                           fontSize: 14.0,
                           color: Colors.grey[600],
