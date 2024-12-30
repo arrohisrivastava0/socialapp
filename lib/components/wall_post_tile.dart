@@ -233,12 +233,15 @@ class _WallPostTileState extends State<WallPostTile> {
                                                 builder: (context) =>
                                                     UserProfilePage()));
                                       }
-                                      Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                              builder: (context) =>
-                                                  OthersProfilePage(
-                                                      userId: comment['userId'])));
+                                      else{
+                                        Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    OthersProfilePage(
+                                                        userId: comment['userId'])));
+                                      }
+
                                     },
                                   ),
 
@@ -389,12 +392,15 @@ class _WallPostTileState extends State<WallPostTile> {
                                     builder: (context) =>
                                         UserProfilePage()));
                           }
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) =>
-                                      OthersProfilePage(
-                                          userId: widget.userId)));
+                          else{
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        OthersProfilePage(
+                                            userId: widget.userId)));
+                          }
+
                         },
                         child: Text(
                           widget.username,
