@@ -21,23 +21,38 @@ class _SearchPageState extends State<SearchPage> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: TextField(
-            decoration: InputDecoration(
-              hintText: 'Search by name or username...',
-              border: InputBorder.none,
-              hintStyle: TextStyle(color: Theme.of(context).colorScheme.surface),
+          title: Container(
+            height: 45,
+            decoration: BoxDecoration(
+              color: Colors.grey[850], // Background color for the search bar
+              borderRadius: BorderRadius.circular(20), // Rounded corners
             ),
-            style: TextStyle(color: Theme.of(context).colorScheme.surface),
-            onChanged: (value) {
-              setState(() {
-                searchQuery = value.trim().toLowerCase();
-              });
-            },
+            child: Row(
+              children: [
+                const SizedBox(width: 10),
+                const Icon(Icons.search, color: Colors.grey), // Search icon
+                const SizedBox(width: 10),
+                Expanded(
+                  child: TextField(
+                    style: const TextStyle(color: Colors.white), // Text color
+                    cursorColor: Colors.white, // Cursor color
+                    decoration: const InputDecoration(
+                      hintText: 'Search',
+                      hintStyle: TextStyle(color: Colors.grey), // Placeholder style
+                      border: InputBorder.none, // Removes underline
+                    ),
+
+                    onChanged: (value) {
+                      setState(() {
+                        searchQuery = value.trim().toLowerCase();
+                      });
+                    },
+                  ),
+                ),
+              ],
+            ),
           ),
-          backgroundColor: Theme
-              .of(context)
-              .colorScheme
-              .inversePrimary,
+          backgroundColor: Theme.of(context).colorScheme.onPrimary,
         ),
         backgroundColor: Theme
             .of(context)
