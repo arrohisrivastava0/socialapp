@@ -391,13 +391,13 @@ class _WallPostTileState extends State<WallPostTile> {
                 ),
               ],
             ),
-            const SizedBox(height: 12.0),
+            const SizedBox(height: 14.0),
 
             // Post Content
             Text(
               widget.content,
               style: const TextStyle(
-                fontSize: 14.0,
+                fontSize: 17.0,
               ),
             ),
             const SizedBox(height: 12.0),
