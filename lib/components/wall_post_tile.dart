@@ -219,16 +219,28 @@ class _WallPostTileState extends State<WallPostTile> {
                                 radius: 15,
                                 child: Text(comment['username'][0].toUpperCase(), style: TextStyle(fontSize: 15),),
                               ),
-                              title: GestureDetector(
-                                child: Text(comment['username']),
-                                onTap: () {
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) =>
-                                              OthersProfilePage(
-                                                  userId: comment['userId'])));
-                                },
+                              title: Row(
+                                children: [
+                                  GestureDetector(
+                                    child: Text(comment['username']),
+                                    onTap: () {
+                                      Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  OthersProfilePage(
+                                                      userId: comment['userId'])));
+                                    },
+                                  ),
+
+                                  Text(
+                                    timeAgo(widget.timestamp),
+                                    style: TextStyle(
+                                      fontSize: 14.0,
+                                      color: Colors.grey[600],
+                                    ),
+                                  ),
+                                ],
                               ),
                               // title: Text(comment['username']),
                               subtitle: Text(comment['content']),
@@ -303,6 +315,28 @@ class _WallPostTileState extends State<WallPostTile> {
       },
     );
   }
+
+  String timeAgo(Timestamp timestamp) {
+    final now = DateTime.now();
+    final difference = now.difference(timestamp.toDate());
+
+    if (difference.inSeconds < 60) {
+      return ' ${difference.inSeconds}s ago';
+    } else if (difference.inMinutes < 60) {
+      return ' ${difference.inMinutes}m ago';
+    } else if (difference.inHours < 24) {
+      return ' ${difference.inHours}h ago';
+    } else if (difference.inDays < 7) {
+      return ' ${difference.inDays}d ago';
+    } else if (difference.inDays < 30) {
+      return ' ${(difference.inDays / 7).floor()}w ago';
+    } else if (difference.inDays < 365) {
+      return ' ${(difference.inDays / 30).floor()}mo ago';
+    } else {
+      return ' ${(difference.inDays / 365).floor()}y ago';
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
