@@ -268,7 +268,7 @@ class _WallPostTileState extends State<WallPostTile> {
                                           ? Icons.favorite
                                           : Icons.favorite_border,
                                       color: isCommentLiked
-                                          ? Colors.red
+                                          ? Colors.pink[200]
                                           : Colors.grey,
                                       size: 20,
                                     ),
@@ -444,7 +444,7 @@ class _WallPostTileState extends State<WallPostTile> {
                       icon: Icon(
                         isLiked ? Icons.favorite : Icons.favorite_border,
                         color: isLiked
-                            ? Colors.red[700]
+                            ? Colors.pink[200]
                             : Theme.of(context).colorScheme.inversePrimary,
                       ),
                     ),

@@ -119,9 +119,13 @@ class _FeedPageState extends State<FeedPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(onPressed: showPostDialog, icon: Icon(Icons.edit, color: Theme.of(context).colorScheme.inversePrimary,), color: Theme.of(context).colorScheme.inversePrimary,),
         centerTitle: true,
         title:Text('W  A  L  L', style: TextStyle(color: Theme.of(context).colorScheme.inversePrimary),),
         backgroundColor: Theme.of(context).colorScheme.onPrimary,
+        actions: [
+          IconButton(onPressed: (){}, icon: Icon(Icons.favorite, color: Colors.pink[200],), color: Theme.of(context).colorScheme.inversePrimary,)
+        ],
       ),
 
       body: LiquidPullToRefresh(
@@ -156,14 +160,6 @@ class _FeedPageState extends State<FeedPage> {
             );
           },
         ),
-      ),
-
-      floatingActionButton: FloatingActionButton(
-        shape: const CircleBorder(),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        elevation: 20,
-        onPressed: showPostDialog,
-        child: const Icon(Icons.edit), // Pencil icon
       ),
     );
   }
