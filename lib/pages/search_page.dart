@@ -104,6 +104,7 @@ class _SearchPageState extends State<SearchPage> {
                       padding: const EdgeInsets.all(6.0),
                       child: ListTile(
                         leading: CircleAvatar(
+                          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
                           child: Text(user['username'][0].toUpperCase()),
                         ),
                         title: Text(user["username"]),
