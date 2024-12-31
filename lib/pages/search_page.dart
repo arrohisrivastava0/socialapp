@@ -24,7 +24,7 @@ class _SearchPageState extends State<SearchPage> {
           title: Container(
             height: 45,
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary, // Background color for the search bar
+              color: Theme.of(context).colorScheme.surface, // Background color for the search bar
               borderRadius: BorderRadius.circular(20), // Rounded corners
             ),
             child: Row(
@@ -34,8 +34,8 @@ class _SearchPageState extends State<SearchPage> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: TextField(
-                    style: const TextStyle(color: Colors.white), // Text color
-                    cursorColor: Colors.white, // Cursor color
+                    // style: const TextStyle(color: Colors.white), // Text color
+                    // cursorColor: Colors.white, // Cursor color
                     decoration: const InputDecoration(
                       hintText: 'Search',
                       border: InputBorder.none, // Removes underline
