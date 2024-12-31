@@ -106,7 +106,12 @@ class _UserProfilePageState extends State<UserProfilePage> {
       // .orderBy('timestamp', descending: true)
           .snapshots()
           .map((querySnapshot) {
-        return querySnapshot.docs.map((doc) => doc.data()).toList();
+        // return querySnapshot.docs.map((doc) => doc.data()).toList();
+        return querySnapshot.docs.map((doc){
+          final data = doc.data();
+          data['postId'] = doc.id; // Include postId for each document
+          return data;
+        }).toList();
       });
   }
 
