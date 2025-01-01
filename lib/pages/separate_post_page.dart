@@ -35,6 +35,7 @@ class _SeparatePostPageState extends State<SeparatePostPage> {
                 return const Center(child: Text("You have no life"));
               }
 
+
               final posts = snapshot.data!.data()!;
               return ListView.builder(
                 itemCount: posts.length,
