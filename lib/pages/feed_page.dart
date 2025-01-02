@@ -124,15 +124,8 @@ class _FeedPageState extends State<FeedPage> {
         centerTitle: true,
         title:Text('W  A  L  L', style: TextStyle(color: Theme.of(context).colorScheme.inversePrimary),),
         backgroundColor: Theme.of(context).colorScheme.onPrimary,
-        actions: const [
-          LikeButton(
-            circleColor : const CircleColor(start: Color(0xFF79173D), end: Color(
-                0xFFFF0777)),
-            bubblesColor : const BubblesColor(dotPrimaryColor: Color(0xFFDA81B8), dotSecondaryColor: Color(
-                0xFFD94E76), dotThirdColor: Color(0xFFAF1C5C), dotLastColor: Color(
-                0xFF911942)),
-          ),
-          // IconButton(onPressed: (){}, icon: Icon(Icons.favorite, color: Colors.pink[200],), color: Theme.of(context).colorScheme.inversePrimary,)
+        actions: [
+          IconButton(onPressed: (){}, icon: Icon(Icons.favorite, color: Colors.pink[300],), color: Theme.of(context).colorScheme.inversePrimary,)
         ],
       ),
 

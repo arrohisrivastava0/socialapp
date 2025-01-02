@@ -227,7 +227,7 @@ class _WallPostTileState extends State<WallPostTile> {
                     width: 40,
                     margin: const EdgeInsets.only(top: 10, bottom: 10),
                     decoration: BoxDecoration(
-                      color: Colors.grey[300],
+                      color: Theme.of(context).colorScheme.inversePrimary,
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
@@ -327,18 +327,18 @@ class _WallPostTileState extends State<WallPostTile> {
                                           ? Icons.favorite
                                           : Icons.favorite_border,
                                       color: isCommentLiked
-                                          ? Colors.pink[200]
-                                          : Colors.grey,
+                                          ? Colors.pink[300]
+                                          : Theme.of(context).colorScheme.inversePrimary,
                                       size: 20,
                                     ),
                                   ),
-                                  SizedBox(height: 4),
+                                  const SizedBox(height: 4),
                                   Text(
                                     '$commentLikeCount',
                                     // Replace with your like count
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 12,
-                                      color: Colors.grey, // Adjust color
+                                      color: Theme.of(context).colorScheme.inversePrimary, // Adjust color
                                     ),
                                   ),
                                 ],
