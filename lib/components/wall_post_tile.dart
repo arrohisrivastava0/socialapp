@@ -496,6 +496,7 @@ class _WallPostTileState extends State<WallPostTile> {
                 Row(
                   children: [
                     LikeButton(
+                      animationDuration: Duration(milliseconds: 500),
                       isLiked: isLiked,
                       likeCount: likeCount,
                       onTap: onLikeButtonTapped,
@@ -507,11 +508,22 @@ class _WallPostTileState extends State<WallPostTile> {
                           dotThirdColor: Color(0xFFAF1C5C),
                           dotLastColor: Color(0xFF911942)),
                       likeBuilder: (bool isLiked) {
-                        return Icon(
-                          Icons.favorite,
-                          color: isLiked ? Colors.pink[300] : Theme.of(context).colorScheme.inversePrimary,
-                          size: 25,
-                        );
+                        if(isLiked){
+                          return Icon(
+                            Icons.favorite,
+                            color: Colors.pink[300],
+                            size: 25,
+                          );
+                        }
+                        else{
+                          return Icon(
+                            Icons.favorite_outline,
+                            color: Theme.of(context).colorScheme.inversePrimary,
+                            size: 25,
+                          );
+
+                        }
+
                       },
                     ),
                   ],
