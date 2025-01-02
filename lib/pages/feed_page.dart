@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:like_button/like_button.dart';
 import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
 import 'package:socialapp/components/wall_post_tile.dart';
 
@@ -123,8 +124,15 @@ class _FeedPageState extends State<FeedPage> {
         centerTitle: true,
         title:Text('W  A  L  L', style: TextStyle(color: Theme.of(context).colorScheme.inversePrimary),),
         backgroundColor: Theme.of(context).colorScheme.onPrimary,
-        actions: [
-          IconButton(onPressed: (){}, icon: Icon(Icons.favorite, color: Colors.pink[200],), color: Theme.of(context).colorScheme.inversePrimary,)
+        actions: const [
+          LikeButton(
+            circleColor : const CircleColor(start: Color(0xFF79173D), end: Color(
+                0xFFFF0777)),
+            bubblesColor : const BubblesColor(dotPrimaryColor: Color(0xFFDA81B8), dotSecondaryColor: Color(
+                0xFFD94E76), dotThirdColor: Color(0xFFAF1C5C), dotLastColor: Color(
+                0xFF911942)),
+          ),
+          // IconButton(onPressed: (){}, icon: Icon(Icons.favorite, color: Colors.pink[200],), color: Theme.of(context).colorScheme.inversePrimary,)
         ],
       ),
 

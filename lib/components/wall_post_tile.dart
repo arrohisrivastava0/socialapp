@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:like_button/like_button.dart';
 import 'package:socialapp/pages/user_profile_page.dart';
 
 import '../pages/others_profile_page.dart';
@@ -17,7 +18,8 @@ class WallPostTile extends StatefulWidget {
     required this.content,
     required this.username,
     required this.timestamp,
-    required this.postId, required this.userId,
+    required this.postId,
+    required this.userId,
   }) : super(key: key);
 
   @override
@@ -37,7 +39,6 @@ class _WallPostTileState extends State<WallPostTile> {
     _fetchCommentCount();
   }
 
-
   Future<void> _checkIfLiked() async {
     final currentUserId = FirebaseAuth.instance.currentUser!.uid;
 
@@ -47,7 +48,8 @@ class _WallPostTileState extends State<WallPostTile> {
         .get();
 
     if (postDoc.exists) {
-      final likes = List<Map<String, dynamic>>.from(postDoc.data()?['likes'] ?? []);
+      final likes =
+          List<Map<String, dynamic>>.from(postDoc.data()?['likes'] ?? []);
 
       setState(() {
         isLiked = likes.any((like) => like['userId'] == currentUserId);
@@ -70,24 +72,30 @@ class _WallPostTileState extends State<WallPostTile> {
 
   Future<void> likePost() async {
     final currentUserId = FirebaseAuth.instance.currentUser!.uid;
-    final postRef = FirebaseFirestore.instance.collection("Posts").doc(widget.postId);
+    final postRef =
+        FirebaseFirestore.instance.collection("Posts").doc(widget.postId);
     if (isLiked) {
       final postDoc = await postRef.get();
-      final likes = List<Map<String, dynamic>>.from(postDoc.data()?['likes'] ?? []);
+      final likes =
+          List<Map<String, dynamic>>.from(postDoc.data()?['likes'] ?? []);
       // Unlike the post
       await postRef.update({
-        'likes': FieldValue.arrayRemove([likes.firstWhere(
-      (like) => like['userId'] == currentUserId,)]),
+        'likes': FieldValue.arrayRemove([
+          likes.firstWhere(
+            (like) => like['userId'] == currentUserId,
+          )
+        ]),
       });
       setState(() {
         isLiked = false;
         likeCount -= 1;
       });
-    }
-    else {
+    } else {
       // Like the post
       await postRef.update({
-        'likes': FieldValue.arrayUnion([{'userId': currentUserId, 'timestamp': Timestamp.now()}]),
+        'likes': FieldValue.arrayUnion([
+          {'userId': currentUserId, 'timestamp': Timestamp.now()}
+        ]),
       });
       setState(() {
         isLiked = true;
@@ -131,14 +139,14 @@ class _WallPostTileState extends State<WallPostTile> {
         .doc(commentId);
 
     final commentDoc = await commentRef.get();
-    final likes = List<Map<String, dynamic>>.from(commentDoc.data()?['likes'] ?? []);
+    final likes =
+        List<Map<String, dynamic>>.from(commentDoc.data()?['likes'] ?? []);
     final isCommentLiked = likes.any((like) => like['userId'] == currentUserId);
 
     if (isCommentLiked) {
       await commentRef.update({
-        'likes': FieldValue.arrayRemove([
-          likes.firstWhere((like) => like['userId'] == currentUserId)
-        ]),
+        'likes': FieldValue.arrayRemove(
+            [likes.firstWhere((like) => like['userId'] == currentUserId)]),
       });
     } else {
       await commentRef.update({
@@ -209,41 +217,49 @@ class _WallPostTileState extends State<WallPostTile> {
                             final comment =
                                 comments[index].data() as Map<String, dynamic>;
                             final commentId = comments[index].id;
-                            final isCommentLiked = List<Map<String, dynamic>>
-                                .from(comment['likes'] ?? [])
-                                .any((like) => like['userId'] ==
-                                FirebaseAuth.instance.currentUser!.uid);
+                            final isCommentLiked =
+                                List<Map<String, dynamic>>.from(
+                                        comment['likes'] ?? [])
+                                    .any((like) =>
+                                        like['userId'] ==
+                                        FirebaseAuth.instance.currentUser!.uid);
                             final commentLikeCount =
                                 (comment['likes'] as List?)?.length ?? 0;
                             return ListTile(
                               leading: CircleAvatar(
-                                backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+                                backgroundColor: Theme.of(context)
+                                    .colorScheme
+                                    .inversePrimary,
                                 radius: 15,
-                                child: Text(comment['username'][0].toUpperCase(), style: TextStyle(fontSize: 15),),
+                                child: Text(
+                                  comment['username'][0].toUpperCase(),
+                                  style: TextStyle(fontSize: 15),
+                                ),
                               ),
                               title: Row(
                                 children: [
                                   GestureDetector(
                                     child: Text(comment['username']),
                                     onTap: () {
-                                      if(comment['userId'] == FirebaseAuth.instance.currentUser!.uid){
+                                      if (comment['userId'] ==
+                                          FirebaseAuth
+                                              .instance.currentUser!.uid) {
                                         Navigator.push(
                                             context,
                                             MaterialPageRoute(
                                                 builder: (context) =>
                                                     UserProfilePage()));
-                                      }
-                                      else{
+                                      } else {
                                         Navigator.push(
                                             context,
                                             MaterialPageRoute(
                                                 builder: (context) =>
                                                     OthersProfilePage(
-                                                        userId: comment['userId'])));
+                                                        userId: comment[
+                                                            'userId'])));
                                       }
                                     },
                                   ),
-
                                   Text(
                                     timeAgo(widget.timestamp),
                                     style: TextStyle(
@@ -275,7 +291,8 @@ class _WallPostTileState extends State<WallPostTile> {
                                   ),
                                   SizedBox(height: 4),
                                   Text(
-                                    '$commentLikeCount', // Replace with your like count
+                                    '$commentLikeCount',
+                                    // Replace with your like count
                                     style: const TextStyle(
                                       fontSize: 12,
                                       color: Colors.grey, // Adjust color
@@ -348,7 +365,6 @@ class _WallPostTileState extends State<WallPostTile> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -357,7 +373,7 @@ class _WallPostTileState extends State<WallPostTile> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12.0),
       ),
-      elevation: 2,
+      elevation: 10,
       child: Padding(
         padding: const EdgeInsets.all(12.0),
         child: Column(
@@ -384,22 +400,19 @@ class _WallPostTileState extends State<WallPostTile> {
                     children: [
                       GestureDetector(
                         onTap: () {
-                          if(widget.userId == FirebaseAuth.instance.currentUser!.uid){
+                          if (widget.userId ==
+                              FirebaseAuth.instance.currentUser!.uid) {
                             Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (context) =>
-                                        UserProfilePage()));
-                          }
-                          else{
+                                    builder: (context) => UserProfilePage()));
+                          } else {
                             Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (context) =>
-                                        OthersProfilePage(
-                                            userId: widget.userId)));
+                                    builder: (context) => OthersProfilePage(
+                                        userId: widget.userId)));
                           }
-
                         },
                         child: Text(
                           widget.username,
@@ -439,6 +452,19 @@ class _WallPostTileState extends State<WallPostTile> {
               children: [
                 Row(
                   children: [
+                    GestureDetector(
+                      onTap: likePost,
+                      child: const LikeButton(
+                        size: 25,
+                        circleColor: CircleColor(
+                            start: Color(0xFF79173D), end: Color(0xFFFF0777)),
+                        bubblesColor: BubblesColor(
+                            dotPrimaryColor: Color(0xFFDA81B8),
+                            dotSecondaryColor: Color(0xFFD94E76),
+                            dotThirdColor: Color(0xFFAF1C5C),
+                            dotLastColor: Color(0xFF911942)),
+                      ),
+                    ),
                     IconButton(
                       onPressed: likePost,
                       icon: Icon(
@@ -448,6 +474,18 @@ class _WallPostTileState extends State<WallPostTile> {
                             : Theme.of(context).colorScheme.inversePrimary,
                       ),
                     ),
+
+                    // LikeButton(
+                    //   size: 25,
+                    //   circleColor : const CircleColor(start: Color(0xFF79173D), end: Color(
+                    //       0xFFFF0777)),
+                    //   bubblesColor : const BubblesColor(dotPrimaryColor: Color(0xFFDA81B8), dotSecondaryColor: Color(
+                    //       0xFFD94E76), dotThirdColor: Color(0xFFAF1C5C), dotLastColor: Color(
+                    //       0xFF911942)),
+                    //   likeBuilder: (isLiked){
+                    //     return likePost();
+                    //   },
+                    // ),
                     Text(
                       '$likeCount',
                       style: TextStyle(
