@@ -39,6 +39,49 @@ class _WallPostTileState extends State<WallPostTile> {
     _fetchCommentCount();
   }
 
+  Future<bool> onLikeButtonTapped(bool isLiked) async {
+    final currentUserId = FirebaseAuth.instance.currentUser!.uid;
+    final postRef = FirebaseFirestore.instance.collection("Posts").doc(widget.postId);
+
+    if (isLiked) {
+      final postDoc = await postRef.get();
+      final likes =
+      List<Map<String, dynamic>>.from(postDoc.data()?['likes'] ?? []);
+      // Unlike the post
+      await postRef.update({
+        'likes': FieldValue.arrayRemove([
+          likes.firstWhere(
+                (like) => like['userId'] == currentUserId,
+          )
+        ]),
+      });
+      // Unlike the post
+      // await postRef.update({
+      //   'likes': FieldValue.arrayRemove([
+      //     {'userId': currentUserId}
+      //   ]),
+      // });
+      setState(() {
+        this.isLiked = false;
+        likeCount -= 1;
+      });
+    } else {
+      // Like the post
+      await postRef.update({
+        'likes': FieldValue.arrayUnion([
+          {'userId': currentUserId, 'timestamp': Timestamp.now()}
+        ]),
+      });
+      setState(() {
+        this.isLiked = true;
+        likeCount += 1;
+      });
+    }
+
+    // Return the new state of the button
+    return !isLiked;
+  }
+
   Future<void> _checkIfLiked() async {
     final currentUserId = FirebaseAuth.instance.currentUser!.uid;
 
@@ -452,44 +495,24 @@ class _WallPostTileState extends State<WallPostTile> {
               children: [
                 Row(
                   children: [
-                    GestureDetector(
-                      onTap: likePost,
-                      child: const LikeButton(
-                        size: 25,
-                        circleColor: CircleColor(
-                            start: Color(0xFF79173D), end: Color(0xFFFF0777)),
-                        bubblesColor: BubblesColor(
-                            dotPrimaryColor: Color(0xFFDA81B8),
-                            dotSecondaryColor: Color(0xFFD94E76),
-                            dotThirdColor: Color(0xFFAF1C5C),
-                            dotLastColor: Color(0xFF911942)),
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: likePost,
-                      icon: Icon(
-                        isLiked ? Icons.favorite : Icons.favorite_border,
-                        color: isLiked
-                            ? Colors.pink[200]
-                            : Theme.of(context).colorScheme.inversePrimary,
-                      ),
-                    ),
-
-                    // LikeButton(
-                    //   size: 25,
-                    //   circleColor : const CircleColor(start: Color(0xFF79173D), end: Color(
-                    //       0xFFFF0777)),
-                    //   bubblesColor : const BubblesColor(dotPrimaryColor: Color(0xFFDA81B8), dotSecondaryColor: Color(
-                    //       0xFFD94E76), dotThirdColor: Color(0xFFAF1C5C), dotLastColor: Color(
-                    //       0xFF911942)),
-                    //   likeBuilder: (isLiked){
-                    //     return likePost();
-                    //   },
-                    // ),
-                    Text(
-                      '$likeCount',
-                      style: TextStyle(
-                          color: Theme.of(context).colorScheme.inversePrimary),
+                    LikeButton(
+                      isLiked: isLiked,
+                      likeCount: likeCount,
+                      onTap: onLikeButtonTapped,
+                      circleColor: const CircleColor(
+                          start: Color(0xFF79173D), end: Color(0xFFFF0777)),
+                      bubblesColor: const BubblesColor(
+                          dotPrimaryColor: Color(0xFFDA81B8),
+                          dotSecondaryColor: Color(0xFFD94E76),
+                          dotThirdColor: Color(0xFFAF1C5C),
+                          dotLastColor: Color(0xFF911942)),
+                      likeBuilder: (bool isLiked) {
+                        return Icon(
+                          Icons.favorite,
+                          color: isLiked ? Colors.pink[300] : Theme.of(context).colorScheme.inversePrimary,
+                          size: 25,
+                        );
+                      },
                     ),
                   ],
                 ),
