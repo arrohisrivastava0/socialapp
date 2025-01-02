@@ -55,6 +55,17 @@ class _WallPostTileState extends State<WallPostTile> {
           )
         ]),
       });
+      final postOwner = widget.userId; // The owner of the post
+      if (postOwner != currentUserId) {
+        await FirebaseFirestore.instance.collection('Notifications').add({
+          'recipientId': postOwner,
+          'type': 'like',
+          'senderId': currentUserId,
+          'postId': widget.postId,
+          'timestamp': Timestamp.now(),
+          'message': 'User ${FirebaseAuth.instance.currentUser!.displayName} liked your post.',
+        });
+      }
       // Unlike the post
       // await postRef.update({
       //   'likes': FieldValue.arrayRemove([
@@ -129,6 +140,19 @@ class _WallPostTileState extends State<WallPostTile> {
           )
         ]),
       });
+
+      final postOwner = widget.userId; // The owner of the post
+      if (postOwner != currentUserId) {
+        await FirebaseFirestore.instance.collection('Notifications').add({
+          'recipientId': postOwner,
+          'type': 'like',
+          'senderId': currentUserId,
+          'postId': widget.postId,
+          'timestamp': Timestamp.now(),
+          'message': '${FirebaseAuth.instance.currentUser!.displayName} liked your post.',
+        });
+      }
+
       setState(() {
         isLiked = false;
         likeCount -= 1;
@@ -169,6 +193,20 @@ class _WallPostTileState extends State<WallPostTile> {
       'timestamp': Timestamp.now(),
       'likes': [],
     });
+
+    final postDoc = await FirebaseFirestore.instance.collection('Posts').doc(postId).get();
+    final postOwner = postDoc.data()?['userId'];
+
+    if (postOwner != currentUserId) {
+      await FirebaseFirestore.instance.collection('Notifications').add({
+        'recipientId': postOwner,
+        'type': 'comment',
+        'senderId': currentUserId,
+        'postId': postId,
+        'timestamp': Timestamp.now(),
+        'message': '$username commented on your post.',
+      });
+    }
 
     await _fetchCommentCount();
   }
@@ -496,7 +534,7 @@ class _WallPostTileState extends State<WallPostTile> {
                 Row(
                   children: [
                     LikeButton(
-                      animationDuration: Duration(milliseconds: 500),
+                      animationDuration: const Duration(milliseconds: 800),
                       isLiked: isLiked,
                       likeCount: likeCount,
                       onTap: onLikeButtonTapped,
@@ -521,9 +559,7 @@ class _WallPostTileState extends State<WallPostTile> {
                             color: Theme.of(context).colorScheme.inversePrimary,
                             size: 25,
                           );
-
                         }
-
                       },
                     ),
                   ],
