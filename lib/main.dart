@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:socialapp/api/firebase_api.dart';
 import 'package:socialapp/auth/auth_page.dart';
 import 'package:socialapp/theme/dark_mode.dart';
 import 'package:socialapp/theme/light_mode.dart';
@@ -11,6 +12,7 @@ void main() async{
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  await FirebaseApi().initNotifications();
   runApp(const MyApp());
 }
 
