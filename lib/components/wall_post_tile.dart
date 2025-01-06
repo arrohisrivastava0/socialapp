@@ -446,6 +446,20 @@ class _WallPostTileState extends State<WallPostTile> {
     }
   }
 
+  Future<void> sendNotification(String recipientId, String title, String body) async {
+    final tokenDoc = await FirebaseFirestore.instance.collection('Users').doc(recipientId).get();
+    final token = tokenDoc.data()?['fcmToken']; // Ensure each user saves their FCM token in Firestore during sign-up or login
+
+    if (token != null) {
+      await FirebaseFirestore.instance.collection('NotificationsQueue').add({
+        'token': token,
+        'title': title,
+        'body': body,
+        'timestamp': Timestamp.now(),
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Card(

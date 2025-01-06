@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:socialapp/components/my_button.dart';
@@ -59,6 +60,7 @@ class _SignupPageState extends State<SignupPage> {
   }
 
   Future<void> createUserDoc(UserCredential? userCredential)async {
+    String? token = await FirebaseMessaging.instance.getToken();
     if(userCredential!=null && userCredential.user!=null){
       await FirebaseFirestore.instance
           .collection("Users")
@@ -68,6 +70,7 @@ class _SignupPageState extends State<SignupPage> {
         'username': usernameTextController.text,
         'name': "--",
         'bio': "--",
+        'fcmToken': token
         // 'num_connections':0
       });
 
