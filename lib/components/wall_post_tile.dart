@@ -208,6 +208,19 @@ class _WallPostTileState extends State<WallPostTile> {
       });
     }
 
+    final tokenDoc = await FirebaseFirestore.instance.collection('Users').doc(postOwner).get();
+    final recUsername = tokenDoc.data()?['username'] ?? 'Anonymous';
+    final token = tokenDoc.data()?['fcmToken']; // Ensure each user saves their FCM token in Firestore during sign-up or login
+
+    if (token != null) {
+      await FirebaseFirestore.instance.collection('Notifications').doc('Comments').set({
+        'token': token,
+        'title': "$recUsername just commented on your post!",
+        'body': content,
+        'timestamp': Timestamp.now(),
+      });
+    }
+
     await _fetchCommentCount();
   }
 
