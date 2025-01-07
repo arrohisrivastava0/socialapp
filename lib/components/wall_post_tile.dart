@@ -215,8 +215,10 @@ class _WallPostTileState extends State<WallPostTile> {
     if (token != null) {
       await FirebaseFirestore.instance.collection('Notifications').doc('Comments').set({
         'token': token,
+        'recipientId': recUsername,
         'title': "$recUsername just commented on your post!",
         'body': content,
+        'postId': postId,
         'timestamp': Timestamp.now(),
       });
     }
