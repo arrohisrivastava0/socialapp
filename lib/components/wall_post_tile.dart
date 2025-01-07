@@ -451,7 +451,7 @@ class _WallPostTileState extends State<WallPostTile> {
     final token = tokenDoc.data()?['fcmToken']; // Ensure each user saves their FCM token in Firestore during sign-up or login
 
     if (token != null) {
-      await FirebaseFirestore.instance.collection('NotificationsQueue').add({
+      await FirebaseFirestore.instance.collection('Notifications').doc('Likes').set({
         'token': token,
         'title': title,
         'body': body,
