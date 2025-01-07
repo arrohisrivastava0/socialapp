@@ -196,12 +196,21 @@ class _WallPostTileState extends State<WallPostTile> {
 
     final postDoc = await FirebaseFirestore.instance.collection('Posts').doc(postId).get();
     final postOwner = postDoc.data()?['userId'];
+
+    final recUserDoc = await FirebaseFirestore.instance
+        .collection('Users')
+        .doc(postOwner)
+        .get();
+    final token = recUserDoc.data()?['fcmToken'];
+
+    // final postDoc = await FirebaseFirestore.instance.collection('Posts').doc(postId).get();
+    // final postOwner = postDoc.data()?['userId'];
     final recUsername = postDoc.data()?['username'] ?? 'Anonymous';
-    final token = postDoc.data()?['fcmToken'];
+    // final token = userDoc.data()?['fcmToken'];
 
     if (postOwner != currentUserId) {
       if (token != null) {
-        await FirebaseFirestore.instance.collection('Notifications').doc('Comments').set({
+        await FirebaseFirestore.instance.collection('Notifications').doc('Comment').set({
           'token': token,
           'recipientId': recUsername,
           'senderId': currentUserId,
@@ -257,6 +266,12 @@ class _WallPostTileState extends State<WallPostTile> {
         'likes': FieldValue.arrayRemove(
             [likes.firstWhere((like) => like['userId'] == currentUserId)]),
       });
+
+      final recId= commentDoc.data()?['userId'];
+      if (recId != currentUserId){
+
+      }
+
     } else {
       await commentRef.update({
         'likes': FieldValue.arrayUnion([
