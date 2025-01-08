@@ -6,6 +6,8 @@ import 'package:like_button/like_button.dart';
 import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
 import 'package:socialapp/components/wall_post_tile.dart';
 
+import 'notifications_page.dart';
+
 class FeedPage extends StatefulWidget {
   const FeedPage({super.key});
 
@@ -125,7 +127,16 @@ class _FeedPageState extends State<FeedPage> {
         title:Text('W  A  L  L', style: TextStyle(color: Theme.of(context).colorScheme.inversePrimary),),
         backgroundColor: Theme.of(context).colorScheme.onPrimary,
         actions: [
-          IconButton(onPressed: (){}, icon: Icon(Icons.favorite, color: Colors.pink[300],), color: Theme.of(context).colorScheme.inversePrimary,)
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => NotificationsPage(),
+                ),
+              );
+            },
+            icon: Icon(Icons.favorite, color: Colors.pink[300],), color: Theme.of(context).colorScheme.inversePrimary,)
         ],
       ),
 
