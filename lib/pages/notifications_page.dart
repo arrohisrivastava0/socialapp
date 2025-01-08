@@ -49,8 +49,8 @@ class NotificationsPage extends StatelessWidget {
                       backgroundColor: Theme.of(context).colorScheme.inversePrimary,
                       child: Text(notification['username'][0].toUpperCase()),
                     ),
-                    title: Text(notification['title'] ?? "No Title"),
-                    subtitle: Text(notification['body'] ?? "No Message"),
+                    title: Text(notification['title'] ?? "No Title", style: TextStyle(fontWeight: FontWeight.bold),),
+                    subtitle: Text(notification['body'] ?? "No Message", style: TextStyle(color: Colors.grey),),
                     trailing: notification['isRead'] == false
                         ? Icon(Icons.circle, color: Colors.pink[400], size: 10)
                         : null,
