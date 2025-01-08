@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:socialapp/components/wall_post_tile.dart';
 
 class SeparatePostPage extends StatefulWidget {
   final String postId;
@@ -32,118 +33,126 @@ class _SeparatePostPageState extends State<SeparatePostPage> {
 
           final postData = postSnapshot.data!.data() as Map<String, dynamic>;
 
-          return SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Post card
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Card(
-                    elevation: 4,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              CircleAvatar(
-                                child: Text(postData['username'][0]
-                                    .toUpperCase()), // First letter of username
-                              ),
-                              const SizedBox(width: 10),
-                              Text(
-                                postData['username'],
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                ),
-                              ),
-                              const Spacer(),
-                              Text(
-                                _timeAgo(postData['timestamp']),
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 10),
-                          Text(
-                            postData['content'] ?? '',
-                            style: const TextStyle(fontSize: 16),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-
-                const Divider(),
-
-                // Comments section
-                const Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Text(
-                    "Comments",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                ),
-
-                StreamBuilder<QuerySnapshot>(
-                  stream: FirebaseFirestore.instance
-                      .collection('Posts')
-                      .doc(widget.postId)
-                      .collection('Comments')
-                      .orderBy('timestamp', descending: false)
-                      .snapshots(),
-                  builder: (context, commentsSnapshot) {
-                    if (commentsSnapshot.connectionState ==
-                        ConnectionState.waiting) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
-                    if (!commentsSnapshot.hasData ||
-                        commentsSnapshot.data!.docs.isEmpty) {
-                      return const Padding(
-                        padding: EdgeInsets.all(16.0),
-                        child: Text("No comments yet."),
-                      );
-                    }
-
-                    final comments = commentsSnapshot.data!.docs;
-
-                    return ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: comments.length,
-                      itemBuilder: (context, index) {
-                        final commentData =
-                        comments[index].data() as Map<String, dynamic>;
-
-                        return ListTile(
-                          leading: CircleAvatar(
-                            child: Text(commentData['username'][0]
-                                .toUpperCase()), // First letter of username
-                          ),
-                          title: Text(commentData['username']),
-                          subtitle: Text(commentData['content']),
-                          trailing: Text(
-                            _timeAgo(commentData['timestamp']),
-                            style: const TextStyle(fontSize: 12),
-                          ),
-                        );
-                      },
-                    );
-                  },
-                ),
-              ],
-            ),
+          return WallPostTile(
+            postId: widget.postId,
+            content: postData['content'] ?? '',
+            username: postData['username'] ?? 'Unknown User',
+            userId: postData['userId'] ?? '',
+            timestamp: postData['timestamp'],
           );
+
+          // return SingleChildScrollView(
+          //   child: Column(
+          //     crossAxisAlignment: CrossAxisAlignment.start,
+          //     children: [
+          //       // Post card
+          //       Padding(
+          //         padding: const EdgeInsets.all(8.0),
+          //         child: Card(
+          //           elevation: 4,
+          //           shape: RoundedRectangleBorder(
+          //             borderRadius: BorderRadius.circular(10),
+          //           ),
+          //           child: Padding(
+          //             padding: const EdgeInsets.all(16.0),
+          //             child: Column(
+          //               crossAxisAlignment: CrossAxisAlignment.start,
+          //               children: [
+          //                 Row(
+          //                   children: [
+          //                     CircleAvatar(
+          //                       child: Text(postData['username'][0]
+          //                           .toUpperCase()), // First letter of username
+          //                     ),
+          //                     const SizedBox(width: 10),
+          //                     Text(
+          //                       postData['username'],
+          //                       style: const TextStyle(
+          //                         fontWeight: FontWeight.bold,
+          //                         fontSize: 16,
+          //                       ),
+          //                     ),
+          //                     const Spacer(),
+          //                     Text(
+          //                       _timeAgo(postData['timestamp']),
+          //                       style: const TextStyle(
+          //                         fontSize: 12,
+          //                         color: Colors.grey,
+          //                       ),
+          //                     ),
+          //                   ],
+          //                 ),
+          //                 const SizedBox(height: 10),
+          //                 Text(
+          //                   postData['content'] ?? '',
+          //                   style: const TextStyle(fontSize: 16),
+          //                 ),
+          //               ],
+          //             ),
+          //           ),
+          //         ),
+          //       ),
+          //
+          //       const Divider(),
+          //
+          //       // Comments section
+          //       const Padding(
+          //         padding: EdgeInsets.all(8.0),
+          //         child: Text(
+          //           "Comments",
+          //           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          //         ),
+          //       ),
+          //
+          //       StreamBuilder<QuerySnapshot>(
+          //         stream: FirebaseFirestore.instance
+          //             .collection('Posts')
+          //             .doc(widget.postId)
+          //             .collection('Comments')
+          //             .orderBy('timestamp', descending: false)
+          //             .snapshots(),
+          //         builder: (context, commentsSnapshot) {
+          //           if (commentsSnapshot.connectionState ==
+          //               ConnectionState.waiting) {
+          //             return const Center(child: CircularProgressIndicator());
+          //           }
+          //           if (!commentsSnapshot.hasData ||
+          //               commentsSnapshot.data!.docs.isEmpty) {
+          //             return const Padding(
+          //               padding: EdgeInsets.all(16.0),
+          //               child: Text("No comments yet."),
+          //             );
+          //           }
+          //
+          //           final comments = commentsSnapshot.data!.docs;
+          //
+          //           return ListView.builder(
+          //             shrinkWrap: true,
+          //             physics: const NeverScrollableScrollPhysics(),
+          //             itemCount: comments.length,
+          //             itemBuilder: (context, index) {
+          //               final commentData =
+          //               comments[index].data() as Map<String, dynamic>;
+          //
+          //               return ListTile(
+          //                 leading: CircleAvatar(
+          //                   child: Text(commentData['username'][0]
+          //                       .toUpperCase()), // First letter of username
+          //                 ),
+          //                 title: Text(commentData['username']),
+          //                 subtitle: Text(commentData['content']),
+          //                 trailing: Text(
+          //                   _timeAgo(commentData['timestamp']),
+          //                   style: const TextStyle(fontSize: 12),
+          //                 ),
+          //               );
+          //             },
+          //           );
+          //         },
+          //       ),
+          //     ],
+          //   ),
+          // );
         },
       ),
     );
