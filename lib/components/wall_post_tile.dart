@@ -76,15 +76,32 @@ class _WallPostTileState extends State<WallPostTile> {
       final recUsername = postDoc.data()?['username'] ?? 'Anonymous';
       if (postOwner != currentUserId){
         if (token != null) {
-          await FirebaseFirestore.instance.collection('Notifications').doc('LikePost').set({
-            'token': token,
-            'recipientId': postOwner,
-            'senderId': currentUserId,
-            'title': "$recUsername",
-            'body': "$recUsername just liked your post!",
-            'postId': widget.postId,
-            'timestamp': Timestamp.now(),
+
+          await FirebaseFirestore.instance
+              .collection('Notifications') // Main collection
+              .doc(postOwner) // Document for the recipient user
+              .collection('UserNotifications') // Subcollection for user-specific notifications
+              .add({ // Automatically generate a unique notificationId
+            'type': 'likePost', // Type of notification
+            'title': recUsername, // User who liked the post
+            'message': "$recUsername just liked your post!", // Notification body
+            'postId': widget.postId, // Post ID associated with the like
+            'senderId': currentUserId, // The user who liked the post
+            'isRead': false, // Notification read status
+            'timestamp': Timestamp.now(), // Time of the notification
+            'token': token, // FCM token for push notification
           });
+
+          // await FirebaseFirestore.instance.collection('Notifications').doc('LikePost').set({
+          //   'token': token,
+          //   'recipientId': postOwner,
+          //   'senderId': currentUserId,
+          //   'title': "$recUsername",
+          //   'body': "$recUsername just liked your post!",
+          //   'postId': widget.postId,
+          //   'timestamp': Timestamp.now(),
+          // });
+
           print("\n\n\n\ndone notifying\n\n\n\n");
         }
       }
