@@ -72,7 +72,7 @@ class _WallPostTileState extends State<WallPostTile> {
           .collection('Users')
           .doc(postOwner)
           .get();
-      final token = recUserDoc.data()?['fcmToken'];
+      final token = recUserDoc.data()?['token'];
       final recUsername = postDoc.data()?['username'] ?? 'Anonymous';
       if (postOwner != currentUserId){
         if (token != null) {
@@ -160,7 +160,7 @@ class _WallPostTileState extends State<WallPostTile> {
         .collection('Users')
         .doc(postOwner)
         .get();
-    final token = recUserDoc.data()?['fcmToken'];
+    final token = recUserDoc.data()?['token'];
 
     // final postDoc = await FirebaseFirestore.instance.collection('Posts').doc(postId).get();
     // final postOwner = postDoc.data()?['userId'];
@@ -173,7 +173,7 @@ class _WallPostTileState extends State<WallPostTile> {
           'token': token,
           'recipientId': postOwner,
           'senderId': currentUserId,
-          'title': "$recUsername just commented on your post!",
+          'title': "$username just commented on your post!",
           'body': content,
           'postId': postId,
           'timestamp': Timestamp.now(),
@@ -207,8 +207,16 @@ class _WallPostTileState extends State<WallPostTile> {
           .collection('Users')
           .doc(recId)
           .get();
-      final token = recUserDoc.data()?['fcmToken'];
-      final recUsername = recUserDoc.data()?['username'] ?? 'Anonymous';
+      final token = recUserDoc.data()?['token'];
+      // final recUsername = recUserDoc.data()?['username'] ?? 'Anonymous';
+      final userDoc = await FirebaseFirestore.instance
+          .collection('Users')
+          .doc(currentUserId)
+          .get();
+      final username = userDoc.data()?['username'] ?? 'Anonymous';
+
+      final postDoc = await FirebaseFirestore.instance.collection('Posts').doc(widget.postId).get();
+      final postOwner = widget.username;
 
       if (recId != currentUserId){
         if (token != null) {
@@ -216,8 +224,8 @@ class _WallPostTileState extends State<WallPostTile> {
             'token': token,
             'recipientId': recId,
             'senderId': currentUserId,
-            'title': "$recUsername",
-            'body': "$recUsername just commented on your comment on !",
+            'title': username,
+            'body': "$username just liked your comment on $postOwner's post!",
             'postId': "",
             'timestamp': Timestamp.now(),
           });
