@@ -84,9 +84,9 @@ class _WallPostTileState extends State<WallPostTile> {
           await FirebaseFirestore.instance
               .collection('Notifications') // Main collection
               .doc(postOwner) // Document for the recipient user
-              .collection('LikePost') // Subcollection for user-specific notifications
+              .collection('UserNotifications') // Subcollection for user-specific notifications
               .add({ // Automatically generate a unique notificationId
-            // 'type': 'likePost', // Type of notification
+            'type': 'likePost', // Type of notification
             'title': username, // User who liked the post
             'body': "$username just liked your post!", // Notification body
             'postId': widget.postId, // Post ID associated with the like
@@ -194,9 +194,9 @@ class _WallPostTileState extends State<WallPostTile> {
         await FirebaseFirestore.instance
             .collection('Notifications') // Main collection
             .doc(postOwner) // Document for the recipient user
-            .collection('Comment') // Subcollection for notifications
+            .collection('UserNotifications') // Subcollection for notifications
             .add({ // Automatically generate a unique notificationId
-          // 'type': 'comment', // Type of notification
+          'type': 'comment', // Type of notification
           'title': "$username just commented on your post!", // Notification title
           'body': content, // Comment content
           'postId': postId, // Post ID associated with the comment
@@ -268,9 +268,9 @@ class _WallPostTileState extends State<WallPostTile> {
           await FirebaseFirestore.instance
               .collection('Notifications') // Main collection
               .doc(recId) // Document for recipient user
-              .collection('LikeComment') // Subcollection for notifications
+              .collection('UserNotifications') // Subcollection for notifications
               .add({ // Automatically generate a notificationId
-            // 'type': 'likeComment', // Type of notification (e.g., 'like', 'comment')
+            'type': 'likeComment', // Type of notification (e.g., 'like', 'comment')
             'title': username, // Notification title
             'body': "$username just liked your comment on $postOwner's post!", // Notification body
             'postId': widget.postId, // Optional post ID

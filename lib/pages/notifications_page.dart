@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:socialapp/pages/separate_post_page.dart';
 
 class NotificationsPage extends StatelessWidget {
@@ -17,8 +17,8 @@ class NotificationsPage extends StatelessWidget {
         stream: FirebaseFirestore.instance
             .collection('Notifications')
             .doc(currentUserId)
-            .collection('LikeComment') // Adjust for other subcollections if needed
-            .orderBy('timestamp', descending: true) // Latest notifications first
+            .collection('UserNotifications')
+            .orderBy('timestamp', descending: true)
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -38,22 +38,21 @@ class NotificationsPage extends StatelessWidget {
 
               return ListTile(
                 title: Text(notification['title'] ?? "No Title"),
-                subtitle: Text(notification['message'] ?? "No Message"),
+                subtitle: Text(notification['body'] ?? "No Message"),
                 trailing: notification['isRead'] == false
-                    ? Icon(Icons.circle, color: Colors.red, size: 10)
+                    ? Icon(Icons.circle, color: Colors.pink[400], size: 10)
                     : null,
                 onTap: () {
-                  // Mark as read
+                  // Mark notification as read
                   FirebaseFirestore.instance
                       .collection('Notifications')
                       .doc(currentUserId)
-                      .collection('LikeComment')
+                      .collection('UserNotifications')
                       .doc(notifications[index].id)
                       .update({'isRead': true});
 
-                  // Navigate to the related post or profile
+                  // Navigate to PostPage
                   if (notification['postId'] != null) {
-                    // Example: Navigate to PostPage
                     Navigator.push(
                       context,
                       MaterialPageRoute(
