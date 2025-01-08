@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:like_button/like_button.dart';
 import 'package:socialapp/pages/user_profile_page.dart';
-
 import '../pages/others_profile_page.dart';
 
 class WallPostTile extends StatefulWidget {
@@ -179,31 +178,7 @@ class _WallPostTileState extends State<WallPostTile> {
           'timestamp': Timestamp.now(),
         });
       }
-      // await FirebaseFirestore.instance.collection('Notifications').add({
-      //   'recipientId': postOwner,
-      //   'type': 'comment',
-      //   'senderId': currentUserId,
-      //   'postId': postId,
-      //   'timestamp': Timestamp.now(),
-      //   'message': '$username commented on your post.',
-      // });
     }
-
-    // final tokenDoc = await FirebaseFirestore.instance.collection('Users').doc(postOwner).get();
-    // final recUsername = tokenDoc.data()?['username'] ?? 'Anonymous';
-    // final token = tokenDoc.data()?['fcmToken']; // Ensure each user saves their FCM token in Firestore during sign-up or login
-    //
-    // if (token != null) {
-    //   await FirebaseFirestore.instance.collection('Notifications').doc('Comments').set({
-    //     'token': token,
-    //     'recipientId': recUsername,
-    //     'title': "$recUsername just commented on your post!",
-    //     'body': content,
-    //     'postId': postId,
-    //     'timestamp': Timestamp.now(),
-    //   });
-    // }
-
     await _fetchCommentCount();
   }
 
