@@ -14,7 +14,7 @@ class _SeparatePostPageState extends State<SeparatePostPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Post"),
+        title: Text("P O S T", style: TextStyle(color: Theme.of(context).colorScheme.inversePrimary),),
       ),
       body: StreamBuilder<DocumentSnapshot>(
         stream: FirebaseFirestore.instance

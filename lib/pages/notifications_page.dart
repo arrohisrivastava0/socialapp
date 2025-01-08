@@ -10,7 +10,7 @@ class NotificationsPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Notifications"),
+        title: Text("Notifications", style: TextStyle(color: Theme.of(context).colorScheme.inversePrimary),),
         backgroundColor: Theme.of(context).colorScheme.primary,
       ),
       body: StreamBuilder<QuerySnapshot>(
