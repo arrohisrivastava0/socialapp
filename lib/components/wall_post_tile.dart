@@ -55,23 +55,6 @@ class _WallPostTileState extends State<WallPostTile> {
           )
         ]),
       });
-      final postOwner = widget.userId; // The owner of the post
-      if (postOwner != currentUserId) {
-        await FirebaseFirestore.instance.collection('Notifications').add({
-          'recipientId': postOwner,
-          'type': 'like',
-          'senderId': currentUserId,
-          'postId': widget.postId,
-          'timestamp': Timestamp.now(),
-          'message': 'User ${FirebaseAuth.instance.currentUser!.displayName} liked your post.',
-        });
-      }
-      // Unlike the post
-      // await postRef.update({
-      //   'likes': FieldValue.arrayRemove([
-      //     {'userId': currentUserId}
-      //   ]),
-      // });
       setState(() {
         this.isLiked = false;
         likeCount -= 1;
@@ -83,6 +66,29 @@ class _WallPostTileState extends State<WallPostTile> {
           {'userId': currentUserId, 'timestamp': Timestamp.now()}
         ]),
       });
+
+      final postDoc = await FirebaseFirestore.instance.collection('Posts').doc(widget.postId).get();
+      final postOwner = postDoc.data()?['userId'];
+      final recUserDoc = await FirebaseFirestore.instance
+          .collection('Users')
+          .doc(postOwner)
+          .get();
+      final token = recUserDoc.data()?['fcmToken'];
+      final recUsername = postDoc.data()?['username'] ?? 'Anonymous';
+      if (postOwner != currentUserId){
+        if (token != null) {
+          await FirebaseFirestore.instance.collection('Notifications').doc('LikePost').set({
+            'token': token,
+            'recipientId': postOwner,
+            'senderId': currentUserId,
+            'title': "$recUsername",
+            'body': "$recUsername just liked your post!",
+            'postId': widget.postId,
+            'timestamp': Timestamp.now(),
+          });
+        }
+      }
+
       setState(() {
         this.isLiked = true;
         likeCount += 1;
@@ -123,53 +129,6 @@ class _WallPostTileState extends State<WallPostTile> {
       commentCount = commentSnapshot.docs.length;
     });
   }
-
-  // Future<void> likePost() async {
-  //   final currentUserId = FirebaseAuth.instance.currentUser!.uid;
-  //   final postRef =
-  //       FirebaseFirestore.instance.collection("Posts").doc(widget.postId);
-  //   if (isLiked) {
-  //     final postDoc = await postRef.get();
-  //     final likes =
-  //         List<Map<String, dynamic>>.from(postDoc.data()?['likes'] ?? []);
-  //     // Unlike the post
-  //     await postRef.update({
-  //       'likes': FieldValue.arrayRemove([
-  //         likes.firstWhere(
-  //           (like) => like['userId'] == currentUserId,
-  //         )
-  //       ]),
-  //     });
-  //
-  //     final postOwner = widget.userId; // The owner of the post
-  //     if (postOwner != currentUserId) {
-  //       await FirebaseFirestore.instance.collection('Notifications').add({
-  //         'recipientId': postOwner,
-  //         'type': 'like',
-  //         'senderId': currentUserId,
-  //         'postId': widget.postId,
-  //         'timestamp': Timestamp.now(),
-  //         'message': '${FirebaseAuth.instance.currentUser!.displayName} liked your post.',
-  //       });
-  //     }
-  //
-  //     setState(() {
-  //       isLiked = false;
-  //       likeCount -= 1;
-  //     });
-  //   } else {
-  //     // Like the post
-  //     await postRef.update({
-  //       'likes': FieldValue.arrayUnion([
-  //         {'userId': currentUserId, 'timestamp': Timestamp.now()}
-  //       ]),
-  //     });
-  //     setState(() {
-  //       isLiked = true;
-  //       likeCount += 1;
-  //     });
-  //   }
-  // }
 
   Future<void> addComment(String postId, String content) async {
     final currentUserId = FirebaseAuth.instance.currentUser!.uid;
