@@ -272,7 +272,7 @@ class _WallPostTileState extends State<WallPostTile> {
               .add({ // Automatically generate a notificationId
             // 'type': 'likeComment', // Type of notification (e.g., 'like', 'comment')
             'title': username, // Notification title
-            'message': "$username just liked your comment on $postOwner's post!", // Notification body
+            'body': "$username just liked your comment on $postOwner's post!", // Notification body
             'postId': widget.postId, // Optional post ID
             'senderId': currentUserId, // The user who triggered the notification
             'isRead': false, // Notification read status
