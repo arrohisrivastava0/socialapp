@@ -73,18 +73,22 @@ class _WallPostTileState extends State<WallPostTile> {
           .doc(postOwner)
           .get();
       final token = recUserDoc.data()?['token'];
-      final recUsername = postDoc.data()?['username'] ?? 'Anonymous';
+      final currentUserDoc = await FirebaseFirestore.instance
+          .collection('Users')
+          .doc(currentUserId)
+          .get();
+      final username = currentUserDoc.data()?['username'] ?? 'Anonymous';
       if (postOwner != currentUserId){
         if (token != null) {
 
           await FirebaseFirestore.instance
               .collection('Notifications') // Main collection
               .doc(postOwner) // Document for the recipient user
-              .collection('UserNotifications') // Subcollection for user-specific notifications
+              .collection('LikePost') // Subcollection for user-specific notifications
               .add({ // Automatically generate a unique notificationId
-            'type': 'likePost', // Type of notification
-            'title': recUsername, // User who liked the post
-            'message': "$recUsername just liked your post!", // Notification body
+            // 'type': 'likePost', // Type of notification
+            'title': username, // User who liked the post
+            'body': "$username just liked your post!", // Notification body
             'postId': widget.postId, // Post ID associated with the like
             'senderId': currentUserId, // The user who liked the post
             'isRead': false, // Notification read status
@@ -190,11 +194,11 @@ class _WallPostTileState extends State<WallPostTile> {
         await FirebaseFirestore.instance
             .collection('Notifications') // Main collection
             .doc(postOwner) // Document for the recipient user
-            .collection('UserNotifications') // Subcollection for notifications
+            .collection('Comment') // Subcollection for notifications
             .add({ // Automatically generate a unique notificationId
-          'type': 'comment', // Type of notification
+          // 'type': 'comment', // Type of notification
           'title': "$username just commented on your post!", // Notification title
-          'message': content, // Comment content
+          'body': content, // Comment content
           'postId': postId, // Post ID associated with the comment
           'senderId': currentUserId, // The user who made the comment
           'isRead': false, // Notification read status
@@ -255,7 +259,7 @@ class _WallPostTileState extends State<WallPostTile> {
           .get();
       final username = userDoc.data()?['username'] ?? 'Anonymous';
 
-      final postDoc = await FirebaseFirestore.instance.collection('Posts').doc(widget.postId).get();
+      // final postDoc = await FirebaseFirestore.instance.collection('Posts').doc(widget.postId).get();
       final postOwner = widget.username;
 
       if (recId != currentUserId){
@@ -264,15 +268,16 @@ class _WallPostTileState extends State<WallPostTile> {
           await FirebaseFirestore.instance
               .collection('Notifications') // Main collection
               .doc(recId) // Document for recipient user
-              .collection('UserNotifications') // Subcollection for notifications
+              .collection('LikeComment') // Subcollection for notifications
               .add({ // Automatically generate a notificationId
-            'type': 'likeComment', // Type of notification (e.g., 'like', 'comment')
+            // 'type': 'likeComment', // Type of notification (e.g., 'like', 'comment')
             'title': username, // Notification title
             'message': "$username just liked your comment on $postOwner's post!", // Notification body
             'postId': widget.postId, // Optional post ID
             'senderId': currentUserId, // The user who triggered the notification
             'isRead': false, // Notification read status
             'timestamp': Timestamp.now(), // Time of the notification
+            'token':token
           });
 
           // await FirebaseFirestore.instance.collection('Notifications').doc(recId).set({
