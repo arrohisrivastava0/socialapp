@@ -212,7 +212,7 @@ class _WallPostTileState extends State<WallPostTile> {
       if (token != null) {
         await FirebaseFirestore.instance.collection('Notifications').doc('Comment').set({
           'token': token,
-          'recipientId': recUsername,
+          'recipientId': postOwner,
           'senderId': currentUserId,
           'title': "$recUsername just commented on your post!",
           'body': content,
@@ -268,8 +268,26 @@ class _WallPostTileState extends State<WallPostTile> {
       });
 
       final recId= commentDoc.data()?['userId'];
-      if (recId != currentUserId){
 
+      final recUserDoc = await FirebaseFirestore.instance
+          .collection('Users')
+          .doc(recId)
+          .get();
+      final token = recUserDoc.data()?['fcmToken'];
+      final recUsername = recUserDoc.data()?['username'] ?? 'Anonymous';
+
+      if (recId != currentUserId){
+        if (token != null) {
+          await FirebaseFirestore.instance.collection('Notifications').doc('Comment').set({
+            'token': token,
+            'recipientId': recId,
+            'senderId': currentUserId,
+            'title': "$recUsername just commented on your post!",
+            'body': "",
+            'postId': "",
+            'timestamp': Timestamp.now(),
+          });
+        }
       }
 
     } else {
