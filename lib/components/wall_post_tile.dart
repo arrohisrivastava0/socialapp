@@ -85,6 +85,7 @@ class _WallPostTileState extends State<WallPostTile> {
             'postId': widget.postId,
             'timestamp': Timestamp.now(),
           });
+          print("\n\n\n\ndone notifying\n\n\n\n");
         }
       }
 
