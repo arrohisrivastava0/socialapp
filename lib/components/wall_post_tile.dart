@@ -169,15 +169,32 @@ class _WallPostTileState extends State<WallPostTile> {
 
     if (postOwner != currentUserId) {
       if (token != null) {
-        await FirebaseFirestore.instance.collection('Notifications').doc('Comment').set({
-          'token': token,
-          'recipientId': postOwner,
-          'senderId': currentUserId,
-          'title': "$username just commented on your post!",
-          'body': content,
-          'postId': postId,
-          'timestamp': Timestamp.now(),
+
+        await FirebaseFirestore.instance
+            .collection('Notifications') // Main collection
+            .doc(postOwner) // Document for the recipient user
+            .collection('UserNotifications') // Subcollection for notifications
+            .add({ // Automatically generate a unique notificationId
+          'type': 'comment', // Type of notification
+          'title': "$username just commented on your post!", // Notification title
+          'message': content, // Comment content
+          'postId': postId, // Post ID associated with the comment
+          'senderId': currentUserId, // The user who made the comment
+          'isRead': false, // Notification read status
+          'timestamp': Timestamp.now(), // Time of the notification
+          'token': token, // FCM token for push notification
         });
+
+        // await FirebaseFirestore.instance.collection('Notifications').doc('Comment').set({
+        //   'token': token,
+        //   'recipientId': postOwner,
+        //   'senderId': currentUserId,
+        //   'title': "$username just commented on your post!",
+        //   'body': content,
+        //   'postId': postId,
+        //   'timestamp': Timestamp.now(),
+        // });
+
       }
     }
     await _fetchCommentCount();
@@ -226,15 +243,30 @@ class _WallPostTileState extends State<WallPostTile> {
 
       if (recId != currentUserId){
         if (token != null) {
-          await FirebaseFirestore.instance.collection('Notifications').doc('LikeComment').set({
-            'token': token,
-            'recipientId': recId,
-            'senderId': currentUserId,
-            'title': username,
-            'body': "$username just liked your comment on $postOwner's post!",
-            'postId': "",
-            'timestamp': Timestamp.now(),
+
+          await FirebaseFirestore.instance
+              .collection('Notifications') // Main collection
+              .doc(recId) // Document for recipient user
+              .collection('UserNotifications') // Subcollection for notifications
+              .add({ // Automatically generate a notificationId
+            'type': 'likeComment', // Type of notification (e.g., 'like', 'comment')
+            'title': username, // Notification title
+            'message': "$username just liked your comment on $postOwner's post!", // Notification body
+            'postId': widget.postId, // Optional post ID
+            'senderId': currentUserId, // The user who triggered the notification
+            'isRead': false, // Notification read status
+            'timestamp': Timestamp.now(), // Time of the notification
           });
+
+          // await FirebaseFirestore.instance.collection('Notifications').doc(recId).set({
+          //   'token': token,
+          //   'recipientId': recId,
+          //   'senderId': currentUserId,
+          //   'title': username,
+          //   'body': "$username just liked your comment on $postOwner's post!",
+          //   'postId': "",
+          //   'timestamp': Timestamp.now(),
+          // });
         }
       }
     }
