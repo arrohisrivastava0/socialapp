@@ -202,13 +202,19 @@ class _WallPostTileState extends State<WallPostTile> {
             [likes.firstWhere((like) => like['userId'] == currentUserId)]),
       });
 
+    } else {
+      await commentRef.update({
+        'likes': FieldValue.arrayUnion([
+          {'userId': currentUserId, 'timestamp': Timestamp.now()}
+        ]),
+      });
+
       final recId= commentDoc.data()?['userId'];
       final recUserDoc = await FirebaseFirestore.instance
           .collection('Users')
           .doc(recId)
           .get();
       final token = recUserDoc.data()?['token'];
-      // final recUsername = recUserDoc.data()?['username'] ?? 'Anonymous';
       final userDoc = await FirebaseFirestore.instance
           .collection('Users')
           .doc(currentUserId)
@@ -231,13 +237,6 @@ class _WallPostTileState extends State<WallPostTile> {
           });
         }
       }
-
-    } else {
-      await commentRef.update({
-        'likes': FieldValue.arrayUnion([
-          {'userId': currentUserId, 'timestamp': Timestamp.now()}
-        ]),
-      });
     }
   }
 
