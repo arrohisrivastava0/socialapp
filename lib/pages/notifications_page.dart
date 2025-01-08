@@ -31,38 +31,52 @@ class NotificationsPage extends StatelessWidget {
 
           final notifications = snapshot.data!.docs;
 
-          return ListView.builder(
-            itemCount: notifications.length,
-            itemBuilder: (context, index) {
-              final notification = notifications[index].data() as Map<String, dynamic>;
+          return Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: ListView.builder(
+              itemCount: notifications.length,
+              itemBuilder: (context, index) {
+                final notification = notifications[index].data() as Map<String, dynamic>;
+                return Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: ListTile(
+                    tileColor: Theme.of(context).colorScheme.onPrimary,
+                    shape: RoundedRectangleBorder(
+                        borderRadius:BorderRadius.circular(15)
+                    ),
 
-              return ListTile(
-                title: Text(notification['title'] ?? "No Title"),
-                subtitle: Text(notification['body'] ?? "No Message"),
-                trailing: notification['isRead'] == false
-                    ? Icon(Icons.circle, color: Colors.pink[400], size: 10)
-                    : null,
-                onTap: () {
-                  // Mark notification as read
-                  FirebaseFirestore.instance
-                      .collection('Notifications')
-                      .doc(currentUserId)
-                      .collection('UserNotifications')
-                      .doc(notifications[index].id)
-                      .update({'isRead': true});
+                    leading: CircleAvatar(
+                      backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+                      child: Text(notification['username'][0].toUpperCase()),
+                    ),
+                    title: Text(notification['title'] ?? "No Title"),
+                    subtitle: Text(notification['body'] ?? "No Message"),
+                    trailing: notification['isRead'] == false
+                        ? Icon(Icons.circle, color: Colors.pink[400], size: 10)
+                        : null,
+                    onTap: () {
+                      // Mark notification as read
+                      FirebaseFirestore.instance
+                          .collection('Notifications')
+                          .doc(currentUserId)
+                          .collection('UserNotifications')
+                          .doc(notifications[index].id)
+                          .update({'isRead': true});
 
-                  // Navigate to PostPage
-                  if (notification['postId'] != null) {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => SeparatePostPage(postId: notification['postId']),
-                      ),
-                    );
-                  }
-                },
-              );
-            },
+                      // Navigate to PostPage
+                      if (notification['postId'] != null) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => SeparatePostPage(postId: notification['postId']),
+                          ),
+                        );
+                      }
+                    },
+                  ),
+                );
+              },
+            ),
           );
         },
       ),
