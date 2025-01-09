@@ -1,9 +1,12 @@
+import 'dart:convert';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:like_button/like_button.dart';
 import 'package:socialapp/pages/user_profile_page.dart';
 import '../pages/others_profile_page.dart';
+import 'package:http/http.dart' as http;
 
 class WallPostTile extends StatefulWidget {
   final String postId;
@@ -37,6 +40,38 @@ class _WallPostTileState extends State<WallPostTile> {
     _checkIfLiked();
     _fetchCommentCount();
   }
+
+
+  Future<void> sendPushNotification(String fcmToken, String title, String body) async {
+    final serverKey = 'YOUR_SERVER_KEY'; // Obtain this from Firebase Console > Project Settings > Cloud Messaging
+    final url = Uri.parse('https://fcm.googleapis.com/v1/projects/YOUR_PROJECT_ID/messages:send');
+
+    final message = {
+      'message': {
+        'token': fcmToken,
+        'notification': {
+          'title': title,
+          'body': body,
+        },
+      },
+    };
+
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $serverKey',
+      },
+      body: jsonEncode(message),
+    );
+
+    if (response.statusCode == 200) {
+      print('Notification sent successfully!');
+    } else {
+      print('Error sending notification: ${response.body}');
+    }
+  }
+
 
   Future<bool> onLikeButtonTapped(bool isLiked) async {
     final currentUserId = FirebaseAuth.instance.currentUser!.uid;
