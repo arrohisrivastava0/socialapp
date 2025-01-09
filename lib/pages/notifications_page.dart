@@ -47,7 +47,7 @@ class NotificationsPage extends StatelessWidget {
 
                     leading: CircleAvatar(
                       backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-                      child: Text(notification['username'][0].toUpperCase()),
+                      child: Text(notification['title'][0].toUpperCase()),
                     ),
                     title: Text(notification['title'] ?? "No Title", style: TextStyle(fontWeight: FontWeight.bold),),
                     subtitle: Text(notification['body'] ?? "No Message", style: TextStyle(color: Colors.grey),),
