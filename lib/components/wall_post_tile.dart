@@ -96,16 +96,6 @@ class _WallPostTileState extends State<WallPostTile> {
             'token': token, // FCM token for push notification
           });
 
-          // await FirebaseFirestore.instance.collection('Notifications').doc('LikePost').set({
-          //   'token': token,
-          //   'recipientId': postOwner,
-          //   'senderId': currentUserId,
-          //   'title': "$recUsername",
-          //   'body': "$recUsername just liked your post!",
-          //   'postId': widget.postId,
-          //   'timestamp': Timestamp.now(),
-          // });
-
           print("\n\n\n\ndone notifying\n\n\n\n");
         }
       }
@@ -206,16 +196,6 @@ class _WallPostTileState extends State<WallPostTile> {
           'token': token, // FCM token for push notification
         });
 
-        // await FirebaseFirestore.instance.collection('Notifications').doc('Comment').set({
-        //   'token': token,
-        //   'recipientId': postOwner,
-        //   'senderId': currentUserId,
-        //   'title': "$username just commented on your post!",
-        //   'body': content,
-        //   'postId': postId,
-        //   'timestamp': Timestamp.now(),
-        // });
-
       }
     }
     await _fetchCommentCount();
@@ -279,16 +259,6 @@ class _WallPostTileState extends State<WallPostTile> {
             'timestamp': Timestamp.now(), // Time of the notification
             'token':token
           });
-
-          // await FirebaseFirestore.instance.collection('Notifications').doc(recId).set({
-          //   'token': token,
-          //   'recipientId': recId,
-          //   'senderId': currentUserId,
-          //   'title': username,
-          //   'body': "$username just liked your comment on $postOwner's post!",
-          //   'postId': "",
-          //   'timestamp': Timestamp.now(),
-          // });
         }
       }
     }
