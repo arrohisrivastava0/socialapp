@@ -61,6 +61,7 @@ class _SignupPageState extends State<SignupPage> {
 
   Future<void> createUserDoc(UserCredential? userCredential)async {
     String? token = await FirebaseMessaging.instance.getToken();
+    print(token);
     if(userCredential!=null && userCredential.user!=null){
       await FirebaseFirestore.instance
           .collection("Users")
