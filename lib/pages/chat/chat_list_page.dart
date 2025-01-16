@@ -61,6 +61,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:socialapp/components/user_tile.dart';
 import 'package:socialapp/pages/chat/chat_room_page.dart';
 import 'package:socialapp/pages/chat/chat_service.dart';
 
@@ -197,21 +198,22 @@ class _ChatListPageState extends State<ChatListPage> {
             itemCount: connectedUsers.length,
             itemBuilder:(context, index){
               final connection = connectedUsers[index];
-              return ListTile(
-                leading: CircleAvatar(
-                  child: Text(connection['id'][0].toUpperCase()),
-                ),
-                title: Text(connection['id']),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          ChatRoomPage(chatId: '', currentUserId: '', otherUserId: '',),
-                    ),
-                  );
-                },
-              );
+              return UserTile(uid: connection['id']);
+              // return ListTile(
+              //   leading: CircleAvatar(
+              //     child: Text(connection['id'][0].toUpperCase()),
+              //   ),
+              //   title: Text(connection['id']),
+              //   onTap: () {
+              //     Navigator.push(
+              //       context,
+              //       MaterialPageRoute(
+              //         builder: (context) =>
+              //             ChatRoomPage(chatId: '', currentUserId: '', otherUserId: '',),
+              //       ),
+              //     );
+              //   },
+              // );
             },
 
           );
@@ -277,7 +279,7 @@ class _ChatListPageState extends State<ChatListPage> {
         if (!snapshot.hasData) return const Center(
             child: Text("Your imaginary friends won't show up here"));
 
-        final users = snapshot.data!.docs;
+        final users = snapshot.data!.docs.where((user) => user.id != widget.currentUserId).toList();
         if (users.isEmpty) {
           return const Center(child: Text('No users found.'));
         }
@@ -289,8 +291,9 @@ class _ChatListPageState extends State<ChatListPage> {
             final otherUserId = user.id;
 
             // Prevent the current user from chatting with themselves
-            if (otherUserId == widget.currentUserId)
+            if (otherUserId == widget.currentUserId) {
               return const SizedBox.shrink();
+            }
 
             return ListTile(
               title: Text(user['username']),
