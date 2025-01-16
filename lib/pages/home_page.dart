@@ -3,7 +3,7 @@ import 'package:curved_labeled_navigation_bar/curved_navigation_bar_item.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:socialapp/pages/chat_list_page.dart';
+import 'package:socialapp/pages/chat/chat_list_page.dart';
 import 'package:socialapp/pages/feed_page.dart';
 import 'package:socialapp/pages/post_page.dart';
 import 'package:socialapp/pages/search_page.dart';

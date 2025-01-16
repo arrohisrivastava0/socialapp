@@ -61,7 +61,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:socialapp/pages/chat_room_page.dart';
+import 'package:socialapp/pages/chat/chat_room_page.dart';
 
 class ChatListPage extends StatefulWidget {
 
@@ -81,17 +81,17 @@ class _ChatListPageState extends State<ChatListPage> {
     // Fetch chats where the current user is a participant
     final chatsQuery = await FirebaseFirestore.instance
         .collection('Chats')
-        .where('participants', arrayContains: widget.currentUserId)
+        .doc(widget.currentUserId)
+        // .where('participants', arrayContains: widget.currentUserId)
         .get();
 
     // Find an existing chat with the other user
     QueryDocumentSnapshot<Map<String, dynamic>>? existingChat;
-    for (var doc in chatsQuery.docs) {
-      if ((doc['participants'] as List).contains(otherUserId)) {
+     {
+      if ((chatsQuery['participants'] as List).contains(otherUserId)) {
         existingChat = doc;
-        break;
       }
-    }
+     }
 
     String chatId;
     if (existingChat != null) {
@@ -99,7 +99,7 @@ class _ChatListPageState extends State<ChatListPage> {
       chatId = existingChat.id;
     } else {
       // Create a new chat if no existing chat found
-      final newChatRef = FirebaseFirestore.instance.collection('Chats').doc();
+      final newChatRef = FirebaseFirestore.instance.collection('Chats').doc(widget.currentUserId);
       await newChatRef.set({
         'participants': [widget.currentUserId, otherUserId],
         'lastMessage': '',
@@ -121,6 +121,13 @@ class _ChatListPageState extends State<ChatListPage> {
     );
   }
 
+  Future<String> getUsername(String userId) async{
+    final tokenDoc = await FirebaseFirestore.instance
+        .collection('Users')
+        .doc(userId)
+        .get();
+    return tokenDoc.data()?['username'];
+  }
 
 
   @override
@@ -177,9 +184,9 @@ class _ChatListPageState extends State<ChatListPage> {
             final chat = chats[index];
             final otherUserId = (chat['participants'] as List)
                 .firstWhere((id) => id != widget.currentUserId);
-
+            final username=getUsername(otherUserId);
             return ListTile(
-              title: Text('Chat with $otherUserId'), // Replace with username
+              title: Text('$username'), // Replace with username
               subtitle: Text(chat['lastMessage']),
               onTap: () {
                 Navigator.push(
