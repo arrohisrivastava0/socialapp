@@ -131,7 +131,7 @@ class _ChatListPageState extends State<ChatListPage> {
 
   Future<String> getUsername(String userId) async {
     final tokenDoc =
-        await FirebaseFirestore.instance.collection('Users').doc(userId).get();
+    await FirebaseFirestore.instance.collection('Users').doc(userId).get();
     return tokenDoc.data()?['username'];
   }
 
@@ -185,7 +185,7 @@ class _ChatListPageState extends State<ChatListPage> {
           final connectedUsersDoc = snapshot.data!;
           final List<dynamic> toList = connectedUsersDoc.data()?['to'] ?? [];
           final connectedUsers =
-              toList.map((id) => {'id': id, 'timestamp': null}).toList();
+          toList.map((id) => {'id': id, 'timestamp': null}).toList();
           return ListView.builder(
             itemCount: connectedUsers.length,
             itemBuilder: (context, index) {
@@ -243,11 +243,12 @@ class _ChatListPageState extends State<ChatListPage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => ChatRoomPage(
-                      chatId: chat.id,
-                      currentUserId: widget.currentUserId,
-                      otherUserId: otherUserId,
-                    ),
+                    builder: (context) =>
+                        ChatRoomPage(
+                          chatId: chat.id,
+                          currentUserId: widget.currentUserId,
+                          otherUserId: otherUserId,
+                        ),
                   ),
                 );
               },
@@ -259,11 +260,12 @@ class _ChatListPageState extends State<ChatListPage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => ChatRoomPage(
-                      chatId: chat.id,
-                      currentUserId: widget.currentUserId,
-                      otherUserId: otherUserId,
-                    ),
+                    builder: (context) =>
+                        ChatRoomPage(
+                          chatId: chat.id,
+                          currentUserId: widget.currentUserId,
+                          otherUserId: otherUserId,
+                        ),
                   ),
                 );
               },
@@ -282,17 +284,16 @@ class _ChatListPageState extends State<ChatListPage> {
           .where('username', isLessThanOrEqualTo: '${searchQuery}z')
           .snapshots(),
       builder: (context, snapshot) {
-        if (!snapshot.hasData)
+        if (!snapshot.hasData) {
           return const Center(
               child: Text("Your imaginary friends won't show up here"));
-
+        }
         final users = snapshot.data!.docs
             .where((user) => user.id != widget.currentUserId)
             .toList();
         if (users.isEmpty) {
           return const Center(child: Text('No users found.'));
         }
-
         return ListView.builder(
           itemCount: users.length,
           itemBuilder: (context, index) {
@@ -304,10 +305,18 @@ class _ChatListPageState extends State<ChatListPage> {
               return const SizedBox.shrink();
             }
 
+            return UserTile(
+              uid: otherUserId,
+              onTap: () {},
+            );
+
             return ListTile(
               title: Text(user['username']),
               leading: CircleAvatar(
-                backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+                backgroundColor: Theme
+                    .of(context)
+                    .colorScheme
+                    .inversePrimary,
                 radius: 20,
                 child: Text(
                   user['username'].isNotEmpty
