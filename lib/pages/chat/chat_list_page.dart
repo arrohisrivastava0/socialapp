@@ -299,12 +299,10 @@ class _ChatListPageState extends State<ChatListPage> {
           itemBuilder: (context, index) {
             final user = users[index];
             final otherUserId = user.id;
-
             // Prevent the current user from chatting with themselves
             if (otherUserId == widget.currentUserId) {
               return const SizedBox.shrink();
             }
-
             return UserTile(
               uid: otherUserId,
               onTap: () {},
