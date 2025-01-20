@@ -57,7 +57,7 @@ class UserTile extends StatelessWidget {
                   onTap: onTap,
                 );
               } else {
-                final nm = nameSnapshot.data ?? 'No Name';
+                final nm = nameSnapshot.data ?? ' ';
 
                 return ListTile(
                   title: Text(username),
