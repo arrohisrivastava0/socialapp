@@ -219,10 +219,10 @@ class _ChatListPageState extends State<ChatListPage> {
           .orderBy('lastUpdated', descending: true)
           .snapshots(),
       builder: (context, snapshot) {
-        if (!snapshot.hasData)
+        if (!snapshot.hasData) {
           return const Center(
               child: Text("Your imaginary friends won't show up here"));
-
+        }
         final chats = snapshot.data!.docs;
         if (chats.isEmpty) {
           return const Center(
@@ -239,23 +239,6 @@ class _ChatListPageState extends State<ChatListPage> {
             return UserTile(
               uid: otherUserId,
               name: chat['lastMessage'],
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        ChatRoomPage(
-                          chatId: chat.id,
-                          currentUserId: widget.currentUserId,
-                          otherUserId: otherUserId,
-                        ),
-                  ),
-                );
-              },
-            );
-            return ListTile(
-              title: Text('$username'), // Replace with username
-              subtitle: Text(chat['lastMessage']),
               onTap: () {
                 Navigator.push(
                   context,
