@@ -58,12 +58,28 @@ class UserTile extends StatelessWidget {
                 );
               } else {
                 final nm = nameSnapshot.data ?? ' ';
+                return Padding(
+                  padding: const EdgeInsets.all(6.0),
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+                      child: Text(username[0].toUpperCase()),
+                    ),
+                    title: Text(username),
+                    subtitle: Text(nm),
+                    tileColor: Theme.of(context).colorScheme.onPrimary,
+                    shape: RoundedRectangleBorder(
+                        borderRadius:BorderRadius.circular(15)
+                    ),
 
-                return ListTile(
-                  title: Text(username),
-                  subtitle: Text(nm),
-                  onTap: onTap,
+                    onTap: onTap,
+                  ),
                 );
+                // return ListTile(
+                //   title: Text(username),
+                //   subtitle: Text(nm),
+                //   onTap: onTap,
+                // );
               }
             },
           );
