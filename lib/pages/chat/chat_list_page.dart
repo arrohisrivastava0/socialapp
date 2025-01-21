@@ -36,7 +36,7 @@ class _ChatListPageState extends State<ChatListPage> {
                 });
               },
               decoration: InputDecoration(
-                hintText: 'Search for connections...',
+                hintText: 'Search for chats or connections...',
                 prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
@@ -46,7 +46,44 @@ class _ChatListPageState extends State<ChatListPage> {
           ),
         ),
       ),
-      body: searchQuery.isEmpty ? _buildChatList() : _buildSearchResults(),
+      body: Column(
+        children: [
+          // Show search results if searchQuery is not empty
+          if (searchQuery.isNotEmpty) Expanded(child: _buildSearchResults()),
+
+          // Show Chats and Connections sections if no search is performed
+          if (searchQuery.isEmpty) Expanded(child: _buildChatsAndConnections()),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildChatsAndConnections() {
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Chats Section
+          const Padding(
+            padding: EdgeInsets.all(8.0),
+            child: Text(
+              'Chats',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+          ),
+          _buildChatList(),
+
+          // Connections Section
+          const Padding(
+            padding: EdgeInsets.all(8.0),
+            child: Text(
+              'Connections',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+          ),
+          _buildConnectionList(),
+        ],
+      ),
     );
   }
 
@@ -62,48 +99,109 @@ class _ChatListPageState extends State<ChatListPage> {
           return const Center(child: CircularProgressIndicator());
         }
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return const Center(child: Text('No chats yet. Start a conversation!'));
+          return const Center(
+            child: Text('No chats yet. Start a conversation!'),
+          );
         }
 
         final chats = snapshot.data!.docs;
 
-        return Expanded(
-          child: ListView.builder(
-            itemCount: chats.length,
-            itemBuilder: (context, index) {
-              final chat = chats[index];
-              final otherUserId = (chat['participants'] as List)
-                  .firstWhere((id) => id != widget.currentUserId);
+        return ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: chats.length,
+          itemBuilder: (context, index) {
+            final chat = chats[index];
+            final otherUserId = (chat['participants'] as List)
+                .firstWhere((id) => id != widget.currentUserId);
 
-              return FutureBuilder<String>(
-                future: _getUsername(otherUserId),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const ListTile(
-                      title: Text('Loading...'),
-                    );
-                  }
-                  final username = snapshot.data ?? 'Unknown';
-                  return UserTile(
-                    uid: otherUserId,
-                    name: chat['lastMessage'],
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ChatRoomPage(
-                            chatId: chat.id,
-                            currentUserId: widget.currentUserId,
-                            otherUserId: otherUserId,
-                          ),
-                        ),
-                      );
-                    },
+            return FutureBuilder<String>(
+              future: _getUsername(otherUserId),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const ListTile(
+                    title: Text('Loading...'),
                   );
-                },
-              );
-            },
-          ),
+                }
+                final username = snapshot.data ?? 'Unknown';
+                return UserTile(
+                  uid: otherUserId,
+                  name: chat['lastMessage'],
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ChatRoomPage(
+                          chatId: chat.id,
+                          currentUserId: widget.currentUserId,
+                          otherUserId: otherUserId,
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildConnectionList() {
+    return StreamBuilder<DocumentSnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('Users')
+          .doc(widget.currentUserId)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (!snapshot.hasData || snapshot.data == null) {
+          return const Center(
+            child: Text('No connections found.'),
+          );
+        }
+
+        final data = snapshot.data!;
+        final connections = List<String>.from(data['connections'] ?? []);
+
+        if (connections.isEmpty) {
+          return const Center(
+            child: Text('You have no connections yet.'),
+          );
+        }
+
+        return ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: connections.length,
+          itemBuilder: (context, index) {
+            final otherUserId = connections[index];
+
+            return FutureBuilder<String>(
+              future: _getUsername(otherUserId),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const ListTile(
+                    title: Text('Loading...'),
+                  );
+                }
+                final username = snapshot.data ?? 'Unknown';
+                return UserTile(
+                  uid: otherUserId,
+                  onTap: () {
+                    // _chatService.startChat(
+                    //   currentUserId: widget.currentUserId,
+                    //   otherUserId: otherUserId,
+                    //   context: context,
+                    // );
+                  },
+                );
+              },
+            );
+          },
         );
       },
     );
@@ -128,26 +226,24 @@ class _ChatListPageState extends State<ChatListPage> {
             .where((user) => user.id != widget.currentUserId)
             .toList();
 
-        return Expanded(
-          child: ListView.builder(
-            itemCount: users.length,
-            itemBuilder: (context, index) {
-              final user = users[index];
-              final otherUserId = user.id;
+        return ListView.builder(
+          itemCount: users.length,
+          itemBuilder: (context, index) {
+            final user = users[index];
+            final otherUserId = user.id;
 
-              return UserTile(
-                uid: otherUserId,
-                onTap: () {
-                  // // Handle starting a chat with the selected user
-                  // _chatService.startChat(
-                  //   currentUserId: widget.currentUserId,
-                  //   otherUserId: otherUserId,
-                  //   context: context,
-                  // );
-                },
-              );
-            },
-          ),
+            return UserTile(
+              uid: otherUserId,
+              name: user['username'],
+              onTap: () {
+                // _chatService.startChat(
+                //   currentUserId: widget.currentUserId,
+                //   otherUserId: otherUserId,
+                //   context: context,
+                // );
+              },
+            );
+          },
         );
       },
     );
@@ -161,6 +257,170 @@ class _ChatListPageState extends State<ChatListPage> {
 }
 
 
+
+// import 'package:cloud_firestore/cloud_firestore.dart';
+// import 'package:firebase_auth/firebase_auth.dart';
+// import 'package:flutter/material.dart';
+// import 'package:socialapp/components/user_tile.dart';
+// import 'package:socialapp/pages/chat/chat_room_page.dart';
+// import 'package:socialapp/pages/chat/chat_service.dart';
+//
+// class ChatListPage extends StatefulWidget {
+//   ChatListPage({Key? key}) : super(key: key);
+//
+//   final String currentUserId = FirebaseAuth.instance.currentUser!.uid;
+//
+//   @override
+//   State<ChatListPage> createState() => _ChatListPageState();
+// }
+//
+// class _ChatListPageState extends State<ChatListPage> {
+//   String searchQuery = '';
+//   final TextEditingController searchController = TextEditingController();
+//   final ChatService _chatService = ChatService();
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       appBar: AppBar(
+//         title: const Text('Chats'),
+//         bottom: PreferredSize(
+//           preferredSize: const Size.fromHeight(50),
+//           child: Padding(
+//             padding: const EdgeInsets.all(8.0),
+//             child: TextField(
+//               controller: searchController,
+//               onChanged: (value) {
+//                 setState(() {
+//                   searchQuery = value;
+//                 });
+//               },
+//               decoration: InputDecoration(
+//                 hintText: 'Search for connections...',
+//                 prefixIcon: const Icon(Icons.search),
+//                 border: OutlineInputBorder(
+//                   borderRadius: BorderRadius.circular(8),
+//                 ),
+//               ),
+//             ),
+//           ),
+//         ),
+//       ),
+//       body: searchQuery.isEmpty ? _buildChatList() : _buildSearchResults(),
+//     );
+//   }
+//
+//   Widget _buildChatList() {
+//     return StreamBuilder<QuerySnapshot>(
+//       stream: FirebaseFirestore.instance
+//           .collection('Chats')
+//           .where('participants', arrayContains: widget.currentUserId)
+//           .orderBy('lastUpdated', descending: true)
+//           .snapshots(),
+//       builder: (context, snapshot) {
+//         if (snapshot.connectionState == ConnectionState.waiting) {
+//           return const Center(child: CircularProgressIndicator());
+//         }
+//         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+//           return const Center(child: Text('No chats yet. Start a conversation!'));
+//         }
+//
+//         final chats = snapshot.data!.docs;
+//
+//         return Expanded(
+//           child: ListView.builder(
+//             itemCount: chats.length,
+//             itemBuilder: (context, index) {
+//               final chat = chats[index];
+//               final otherUserId = (chat['participants'] as List)
+//                   .firstWhere((id) => id != widget.currentUserId);
+//
+//               return FutureBuilder<String>(
+//                 future: _getUsername(otherUserId),
+//                 builder: (context, snapshot) {
+//                   if (snapshot.connectionState == ConnectionState.waiting) {
+//                     return const ListTile(
+//                       title: Text('Loading...'),
+//                     );
+//                   }
+//                   final username = snapshot.data ?? 'Unknown';
+//                   return UserTile(
+//                     uid: otherUserId,
+//                     name: chat['lastMessage'],
+//                     onTap: () {
+//                       Navigator.push(
+//                         context,
+//                         MaterialPageRoute(
+//                           builder: (context) => ChatRoomPage(
+//                             chatId: chat.id,
+//                             currentUserId: widget.currentUserId,
+//                             otherUserId: otherUserId,
+//                           ),
+//                         ),
+//                       );
+//                     },
+//                   );
+//                 },
+//               );
+//             },
+//           ),
+//         );
+//       },
+//     );
+//   }
+//
+//   Widget _buildSearchResults() {
+//     return StreamBuilder<QuerySnapshot>(
+//       stream: FirebaseFirestore.instance
+//           .collection('Users')
+//           .where('username', isGreaterThanOrEqualTo: searchQuery)
+//           .where('username', isLessThanOrEqualTo: '${searchQuery}z')
+//           .snapshots(),
+//       builder: (context, snapshot) {
+//         if (snapshot.connectionState == ConnectionState.waiting) {
+//           return const Center(child: CircularProgressIndicator());
+//         }
+//         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+//           return const Center(child: Text('No users found.'));
+//         }
+//
+//         final users = snapshot.data!.docs
+//             .where((user) => user.id != widget.currentUserId)
+//             .toList();
+//
+//         return Expanded(
+//           child: ListView.builder(
+//             itemCount: users.length,
+//             itemBuilder: (context, index) {
+//               final user = users[index];
+//               final otherUserId = user.id;
+//
+//               return UserTile(
+//                 uid: otherUserId,
+//                 onTap: () {
+//                   // // Handle starting a chat with the selected user
+//                   // _chatService.startChat(
+//                   //   currentUserId: widget.currentUserId,
+//                   //   otherUserId: otherUserId,
+//                   //   context: context,
+//                   // );
+//                 },
+//               );
+//             },
+//           ),
+//         );
+//       },
+//     );
+//   }
+//
+//   Future<String> _getUsername(String userId) async {
+//     final userDoc =
+//     await FirebaseFirestore.instance.collection('Users').doc(userId).get();
+//     return userDoc.data()?['username'] ?? 'Unknown';
+//   }
+// }
+//
+//
 
 // // import 'package:cloud_firestore/cloud_firestore.dart';
 // // import 'package:firebase_auth/firebase_auth.dart';
