@@ -99,10 +99,9 @@ class _ChatListPageState extends State<ChatListPage> {
           return const Center(child: CircularProgressIndicator());
         }
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return const Center(
-            child: Text('No chats yet. Start a conversation!'),
-          );
+          return SizedBox.shrink(); // Or return an empty container
         }
+
 
         final chats = snapshot.data!.docs;
 
@@ -265,7 +264,7 @@ class _ChatListPageState extends State<ChatListPage> {
   Future<void> _createChatDoc(String otherUserId) async {
 
     await FirebaseFirestore.instance
-        .collection("Users")
+        .collection("Chat")
         .doc("${widget.currentUserId}_$otherUserId")
         .set({
       'lastMessage': " ",
