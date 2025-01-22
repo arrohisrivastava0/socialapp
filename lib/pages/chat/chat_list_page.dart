@@ -192,11 +192,17 @@ class _ChatListPageState extends State<ChatListPage> {
                 return UserTile(
                   uid: otherUserId,
                   onTap: () {
-                    // _chatService.startChat(
-                    //   currentUserId: widget.currentUserId,
-                    //   otherUserId: otherUserId,
-                    //   context: context,
-                    // );
+                    _createChatDoc(otherUserId);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ChatRoomPage(
+                          chatId: "${widget.currentUserId}_$otherUserId",
+                          currentUserId: widget.currentUserId,
+                          otherUserId: otherUserId,
+                        ),
+                      ),
+                    );
                   },
                 );
               },
@@ -236,6 +242,7 @@ class _ChatListPageState extends State<ChatListPage> {
               uid: otherUserId,
               name: user['username'],
               onTap: () {
+                _createChatDoc(otherUserId);
                 // _chatService.startChat(
                 //   currentUserId: widget.currentUserId,
                 //   otherUserId: otherUserId,
@@ -251,12 +258,22 @@ class _ChatListPageState extends State<ChatListPage> {
 
   Future<String> _getUsername(String userId) async {
     final userDoc =
-    await FirebaseFirestore.instance.collection('Users').doc(userId).get();
+        await FirebaseFirestore.instance.collection('Users').doc(userId).get();
     return userDoc.data()?['username'] ?? 'Unknown';
   }
+
+  Future<void> _createChatDoc(String otherUserId) async {
+
+    await FirebaseFirestore.instance
+        .collection("Users")
+        .doc("${widget.currentUserId}_$otherUserId")
+        .set({
+      'lastMessage': " ",
+      'lastUpdated': " ",
+      'participants': [widget.currentUserId, otherUserId],
+    });
+  }
 }
-
-
 
 // import 'package:cloud_firestore/cloud_firestore.dart';
 // import 'package:firebase_auth/firebase_auth.dart';
