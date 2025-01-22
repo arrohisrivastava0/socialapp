@@ -262,16 +262,35 @@ class _ChatListPageState extends State<ChatListPage> {
   }
 
   Future<void> _createChatDoc(String otherUserId) async {
+    final chatId = "${widget.currentUserId}_$otherUserId";
+    final chatRef = FirebaseFirestore.instance.collection("Chats").doc(chatId);
 
-    await FirebaseFirestore.instance
-        .collection("Chat")
-        .doc("${widget.currentUserId}_$otherUserId")
-        .set({
-      'lastMessage': " ",
-      'lastUpdated': " ",
-      'participants': [widget.currentUserId, otherUserId],
-    });
+    // if ((await chatRef.get()).exists) {
+    //   await chatRef.update({
+    //     'lastUpdated': Timestamp.now(),
+    //   });
+    // }
+    // else {
+      await chatRef.set({
+        'lastMessage': "",
+        'lastUpdated': Timestamp.now(),
+        'participants': [widget.currentUserId, otherUserId],
+      });
+    // }
   }
+
+
+// Future<void> _createChatDoc(String otherUserId) async {
+  //
+  //   await FirebaseFirestore.instance
+  //       .collection("Chat")
+  //       .doc("${widget.currentUserId}_$otherUserId")
+  //       .set({
+  //     'lastMessage': " ",
+  //     'lastUpdated': " ",
+  //     'participants': [widget.currentUserId, otherUserId],
+  //   });
+  // }
 }
 
 // import 'package:cloud_firestore/cloud_firestore.dart';
