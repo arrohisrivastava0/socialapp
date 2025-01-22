@@ -76,17 +76,41 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
                       child: Container(
                         padding: const EdgeInsets.all(10),
-                        margin: const EdgeInsets.all(5),
+                        margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
                         decoration: BoxDecoration(
-                          color: isMe ? Colors.blue : Colors.grey,
-                          borderRadius: BorderRadius.circular(10),
+                          color: isMe ? Colors.blue : Colors.grey[300],
+                          borderRadius: BorderRadius.only(
+                            topLeft: const Radius.circular(10),
+                            topRight: const Radius.circular(10),
+                            bottomLeft: isMe ? const Radius.circular(10) : Radius.zero,
+                            bottomRight: isMe ? Radius.zero : const Radius.circular(10),
+                          ),
                         ),
                         child: Text(
                           message['text'],
-                          style: const TextStyle(color: Colors.white),
+                          style: TextStyle(
+                            color: isMe ? Colors.white : Colors.black,
+                          ),
                         ),
                       ),
                     );
+
+
+                    // return Align(
+                    //   alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+                    //   child: Container(
+                    //     padding: const EdgeInsets.all(10),
+                    //     margin: const EdgeInsets.all(5),
+                    //     decoration: BoxDecoration(
+                    //       color: isMe ? Colors.blue : Colors.grey,
+                    //       borderRadius: BorderRadius.circular(10),
+                    //     ),
+                    //     child: Text(
+                    //       message['text'],
+                    //       style: const TextStyle(color: Colors.white),
+                    //     ),
+                    //   ),
+                    // );
                   },
                 );
               },
