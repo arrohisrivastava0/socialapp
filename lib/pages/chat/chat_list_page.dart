@@ -364,7 +364,8 @@ class _ChatListPageState extends State<ChatListPage> {
 //
 //         return Expanded(
 //           child: ListView.builder(
-//             itemCount: chats.length,
+//             itemCount: chats.length
+//             ,
 //             itemBuilder: (context, index) {
 //               final chat = chats[index];
 //               final otherUserId = (chat['participants'] as List)
