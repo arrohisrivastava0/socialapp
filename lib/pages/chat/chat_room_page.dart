@@ -180,6 +180,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
           .collection('Messages')
           .add(message);
 
+      // Update chat metadata for both users
       await FirebaseFirestore.instance
           .collection('Chats')
           .doc(widget.chatId)
@@ -193,6 +194,38 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
       print('Error sending message: $e');
     }
   }
+
+
+  // Future<void> sendMessage() async {
+  //   if (_messageController.text.isEmpty) return;
+  //
+  //   final message = {
+  //     'senderId': widget.currentUserId,
+  //     'text': _messageController.text,
+  //     'timestamp': Timestamp.now(),
+  //     'isRead': false,
+  //   };
+  //
+  //   try {
+  //     await FirebaseFirestore.instance
+  //         .collection('Chats')
+  //         .doc(widget.chatId)
+  //         .collection('Messages')
+  //         .add(message);
+  //
+  //     await FirebaseFirestore.instance
+  //         .collection('Chats')
+  //         .doc(widget.chatId)
+  //         .update({
+  //       'lastMessage': _messageController.text,
+  //       'lastUpdated': Timestamp.now(),
+  //     });
+  //
+  //     _messageController.clear();
+  //   } catch (e) {
+  //     print('Error sending message: $e');
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
