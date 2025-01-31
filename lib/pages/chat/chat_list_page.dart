@@ -1310,17 +1310,35 @@ class _ChatListPageState extends State<ChatListPage> {
     return userDoc.data()?['username'] ?? 'Unknown';
   }
 
-  Future<void> _createChatDoc(String otherUserId) async {
-    final chatId = "${widget.currentUserId}_$otherUserId";
-    final chatRef = FirebaseFirestore.instance.collection("Chats").doc(chatId);
+  Future<String> _createChatDoc(String otherUserId) async {
+    List<String> sortedIds = [widget.currentUserId, otherUserId]..sort();
+    final chatId = "${sortedIds[0]}_${sortedIds[1]}";
 
+    final chatRef = FirebaseFirestore.instance.collection("Chats").doc(chatId);
     final chatDoc = await chatRef.get();
+
     if (!chatDoc.exists) {
       await chatRef.set({
-        'lastMessage': "", // Initialize with an empty message
+        'lastMessage': "",
         'lastUpdated': Timestamp.now(),
         'participants': [widget.currentUserId, otherUserId],
       });
     }
+    return chatId;
   }
+
+
+// Future<void> _createChatDoc(String otherUserId) async {
+  //   final chatId = "${widget.currentUserId}_$otherUserId";
+  //   final chatRef = FirebaseFirestore.instance.collection("Chats").doc(chatId);
+  //
+  //   final chatDoc = await chatRef.get();
+  //   if (!chatDoc.exists) {
+  //     await chatRef.set({
+  //       'lastMessage': "", // Initialize with an empty message
+  //       'lastUpdated': Timestamp.now(),
+  //       'participants': [widget.currentUserId, otherUserId],
+  //     });
+  //   }
+  // }
 }
