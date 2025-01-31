@@ -1232,19 +1232,18 @@ class _ChatListPageState extends State<ChatListPage> {
                 final username = snapshot.data ?? 'Unknown';
                 return UserTile(
                   uid: otherUserId,
-                  onTap: () {
-                    _createChatDoc(otherUserId).then((_) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ChatRoomPage(
-                            chatId: "${widget.currentUserId}_$otherUserId",
-                            currentUserId: widget.currentUserId,
-                            otherUserId: otherUserId,
-                          ),
+                  onTap: () async {
+                    String chatId = await _createChatDoc(otherUserId);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ChatRoomPage(
+                          chatId: chatId,
+                          currentUserId: widget.currentUserId,
+                          otherUserId: otherUserId,
                         ),
-                      );
-                    });
+                      ),
+                    ).then((_) => setState(() {})); // Refresh chat list on return
                   },
                 );
               },
@@ -1254,6 +1253,73 @@ class _ChatListPageState extends State<ChatListPage> {
       },
     );
   }
+
+
+  // Widget _buildConnectionList() {
+  //   return StreamBuilder<DocumentSnapshot>(
+  //     stream: FirebaseFirestore.instance
+  //         .collection('Users')
+  //         .doc(widget.currentUserId)
+  //         .snapshots(),
+  //     builder: (context, snapshot) {
+  //       if (snapshot.connectionState == ConnectionState.waiting) {
+  //         return const Center(child: CircularProgressIndicator());
+  //       }
+  //       if (!snapshot.hasData || snapshot.data == null) {
+  //         return const Center(
+  //           child: Text('No connections found.'),
+  //         );
+  //       }
+  //
+  //       final data = snapshot.data!;
+  //       final connections = List<String>.from(data['connections'] ?? []);
+  //
+  //       if (connections.isEmpty) {
+  //         return const Center(
+  //           child: Text('You have no connections yet.'),
+  //         );
+  //       }
+  //
+  //       return ListView.builder(
+  //         shrinkWrap: true,
+  //         physics: const NeverScrollableScrollPhysics(),
+  //         itemCount: connections.length,
+  //         itemBuilder: (context, index) {
+  //           final otherUserId = connections[index];
+  //
+  //           return FutureBuilder<String>(
+  //             future: _getUsername(otherUserId),
+  //             builder: (context, snapshot) {
+  //               if (snapshot.connectionState == ConnectionState.waiting) {
+  //                 return const ListTile(
+  //                   title: Text('Loading...'),
+  //                 );
+  //               }
+  //               final username = snapshot.data ?? 'Unknown';
+  //               return UserTile(
+  //                 uid: otherUserId,
+  //                 onTap: () {
+  //                   _createChatDoc(otherUserId).then((_) {
+  //                     Navigator.push(
+  //                       context,
+  //                       MaterialPageRoute(
+  //                         builder: (context) => ChatRoomPage(
+  //                           chatId: "${widget.currentUserId}_$otherUserId",
+  //                           currentUserId: widget.currentUserId,
+  //                           otherUserId: otherUserId,
+  //                         ),
+  //                       ),
+  //                     );
+  //                   });
+  //                 },
+  //               );
+  //             },
+  //           );
+  //         },
+  //       );
+  //     },
+  //   );
+  // }
 
   Widget _buildSearchResults() {
     return StreamBuilder<QuerySnapshot>(
@@ -1283,19 +1349,18 @@ class _ChatListPageState extends State<ChatListPage> {
             return UserTile(
               uid: otherUserId,
               name: user['username'],
-              onTap: () {
-                _createChatDoc(otherUserId).then((_) {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ChatRoomPage(
-                        chatId: "${widget.currentUserId}_$otherUserId",
-                        currentUserId: widget.currentUserId,
-                        otherUserId: otherUserId,
-                      ),
+              onTap: () async {
+                String chatId = await _createChatDoc(otherUserId);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ChatRoomPage(
+                      chatId: chatId,
+                      currentUserId: widget.currentUserId,
+                      otherUserId: otherUserId,
                     ),
-                  );
-                });
+                  ),
+                ).then((_) => setState(() {})); // Refresh chat list after returning
               },
             );
           },
@@ -1303,6 +1368,56 @@ class _ChatListPageState extends State<ChatListPage> {
       },
     );
   }
+
+
+  // Widget _buildSearchResults() {
+  //   return StreamBuilder<QuerySnapshot>(
+  //     stream: FirebaseFirestore.instance
+  //         .collection('Users')
+  //         .where('username', isGreaterThanOrEqualTo: searchQuery)
+  //         .where('username', isLessThanOrEqualTo: '${searchQuery}z')
+  //         .snapshots(),
+  //     builder: (context, snapshot) {
+  //       if (snapshot.connectionState == ConnectionState.waiting) {
+  //         return const Center(child: CircularProgressIndicator());
+  //       }
+  //       if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+  //         return const Center(child: Text('No users found.'));
+  //       }
+  //
+  //       final users = snapshot.data!.docs
+  //           .where((user) => user.id != widget.currentUserId)
+  //           .toList();
+  //
+  //       return ListView.builder(
+  //         itemCount: users.length,
+  //         itemBuilder: (context, index) {
+  //           final user = users[index];
+  //           final otherUserId = user.id;
+  //
+  //           return UserTile(
+  //             uid: otherUserId,
+  //             name: user['username'],
+  //             onTap: () {
+  //               _createChatDoc(otherUserId).then((_) {
+  //                 Navigator.push(
+  //                   context,
+  //                   MaterialPageRoute(
+  //                     builder: (context) => ChatRoomPage(
+  //                       chatId: "${widget.currentUserId}_$otherUserId",
+  //                       currentUserId: widget.currentUserId,
+  //                       otherUserId: otherUserId,
+  //                     ),
+  //                   ),
+  //                 );
+  //               });
+  //             },
+  //           );
+  //         },
+  //       );
+  //     },
+  //   );
+  // }
 
   Future<String> _getUsername(String userId) async {
     final userDoc =
