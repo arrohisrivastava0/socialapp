@@ -1,5 +1,12 @@
 # socialapp
 
+<p>
+  <img src="https://github.com/arrohisrivastava0/socialapp/blob/main/img/ss1.jpg" width="30%">
+  <img src="https://github.com/arrohisrivastava0/socialapp/blob/main/img/ss2.jpg" width="30%">
+  <img src="https://github.com/arrohisrivastava0/socialapp/blob/main/img/ss3.jpg" width="30%">
+  <img src="https://github.com/arrohisrivastava0/socialapp/blob/main/img/ss4.jpg" width="30%">
+</p>
+
 A new Flutter project.
 
 ## Getting Started
